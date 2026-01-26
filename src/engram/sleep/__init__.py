@@ -6,5 +6,7 @@ and don't follow node physics.
 """
 
 from .clusterer import Clusterer
+from .abstractor import Abstractor
+from .contradiction import ContradictionDetector
 
-__all__ = ["Clusterer"]
+__all__ = ["Clusterer", "Abstractor", "ContradictionDetector"]
