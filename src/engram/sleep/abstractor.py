@@ -16,17 +16,14 @@ class Abstractor(SleepAgent):
 
     def __init__(
         self,
-        initial_concept_mass: float = 0.5,
-        initial_concept_energy: float = 1.0,
+        initial_concept_strength: float = 0.5,
     ):
         """Initialize abstractor.
 
         Args:
-            initial_concept_mass: Starting mass for new concepts.
-            initial_concept_energy: Starting energy for new concepts.
+            initial_concept_strength: Starting strength for new concepts.
         """
-        self.initial_concept_mass = initial_concept_mass
-        self.initial_concept_energy = initial_concept_energy
+        self.initial_concept_strength = initial_concept_strength
 
     def run(self, graph: KnowledgeGraph) -> dict:
         """Run abstractor - requires clusters to be provided externally."""
@@ -70,8 +67,8 @@ class Abstractor(SleepAgent):
         concept_node = Node(
             id=concept_id,
             hdv=concept_hdv,
-            energy=self.initial_concept_energy,
-            mass=self.initial_concept_mass,
+            strength=self.initial_concept_strength,
+            last_accessed=0.0,
             content=concept_content,
         )
 

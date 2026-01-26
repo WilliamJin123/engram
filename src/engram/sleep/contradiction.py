@@ -24,18 +24,18 @@ class ContradictionDetector(SleepAgent):
         self,
         similarity_threshold: float = 0.3,
         opposition_threshold: float = -0.3,
-        min_mass: float = 0.1,
+        min_strength: float = 0.1,
     ):
         """Initialize detector.
 
         Args:
             similarity_threshold: Min distributional similarity to compare.
             opposition_threshold: Max mean correlation to count as opposing.
-            min_mass: Minimum mass for nodes to be considered.
+            min_strength: Minimum strength for nodes to be considered.
         """
         self.similarity_threshold = similarity_threshold
         self.opposition_threshold = opposition_threshold
-        self.min_mass = min_mass
+        self.min_strength = min_strength
 
     def run(self, graph: KnowledgeGraph) -> dict:
         """Find contradictions and create uncertainty nodes."""
@@ -64,12 +64,12 @@ class ContradictionDetector(SleepAgent):
         # Compare all pairs
         for i, id_a in enumerate(node_ids):
             node_a = graph.get_node(id_a)
-            if not node_a or node_a.mass < self.min_mass:
+            if not node_a or node_a.strength < self.min_strength:
                 continue
 
             for id_b in node_ids[i + 1:]:
                 node_b = graph.get_node(id_b)
-                if not node_b or node_b.mass < self.min_mass:
+                if not node_b or node_b.strength < self.min_strength:
                     continue
 
                 # Check distributional similarity (are they about same topic?)
@@ -123,12 +123,13 @@ class ContradictionDetector(SleepAgent):
             current_time=0.0,
         )
 
-        # Create node with high energy (demands attention)
+        # Create node with low strength (not established yet)
+        # High priority comes from being newly accessed, not stored energy
         uncertainty_node = Node(
             id=uncertainty_id,
             hdv=hdv,
-            energy=1.0,  # Maximum energy
-            mass=0.1,  # Low mass (not established yet)
+            strength=0.1,  # Low strength (not established yet)
+            last_accessed=0.0,  # Will be updated on access
             content=f"Contradiction between {node_ids}",
         )
 

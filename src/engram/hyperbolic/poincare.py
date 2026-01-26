@@ -295,12 +295,12 @@ def compute_hybrid_position(
     # Use BFS from this node following outgoing edges
     depth = _compute_depth(node.id, edges, nodes)
 
-    # Compute radius from depth and mass
+    # Compute radius from depth and strength
     # - Deeper nodes -> larger radius
-    # - Higher mass -> smaller radius (more abstract/important)
+    # - Higher strength -> smaller radius (more abstract/important)
     base_radius = 0.1 + 0.15 * depth
-    mass_factor = 1.0 / (1.0 + 0.1 * node.mass)  # High mass pulls toward origin
-    radius = min(0.9, base_radius * mass_factor)
+    strength_factor = 1.0 / (1.0 + 0.1 * node.strength)  # High strength pulls toward origin
+    radius = min(0.9, base_radius * strength_factor)
 
     # Compute angle from HDV similarity to neighbors
     # If no neighbors, use random direction based on HDV

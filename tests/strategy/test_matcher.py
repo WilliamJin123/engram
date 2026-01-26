@@ -44,28 +44,28 @@ class TestStrategyMatcher:
         assert len(matches) > 0
         assert matches[0]["strategy_id"] == "strategy_web_search"
 
-    def test_prefers_high_mass_strategies(self, dim):
-        """Higher mass strategies rank higher (more trusted)."""
+    def test_prefers_high_strength_strategies(self, dim):
+        """Higher strength strategies rank higher (more trusted)."""
         graph = KnowledgeGraph()
 
-        # Two strategies for same topic, different mass
+        # Two strategies for same topic, different strength
         hdv = random_distributional(dim, seed=1)
 
-        low_mass = create_strategy_node(
+        low_strength = create_strategy_node(
             node_id="strategy_low",
             hdv=hdv,
             strategy_type="ask_random",
-            mass=0.5,
+            strength=0.5,
         )
-        high_mass = create_strategy_node(
+        high_strength = create_strategy_node(
             node_id="strategy_high",
             hdv=hdv,
             strategy_type="ask_expert",
-            mass=5.0,
+            strength=5.0,
         )
 
-        graph.add_node(low_mass)
-        graph.add_node(high_mass)
+        graph.add_node(low_strength)
+        graph.add_node(high_strength)
 
         # Uncertainty
         uncertainty = Node(id="uncertainty", hdv=hdv)
@@ -74,7 +74,7 @@ class TestStrategyMatcher:
         matcher = StrategyMatcher()
         matches = matcher.find_strategies(graph, uncertainty)
 
-        # High mass should rank first
+        # High strength should rank first
         assert matches[0]["strategy_id"] == "strategy_high"
 
     def test_no_match_for_dissimilar(self, dim):

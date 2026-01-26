@@ -35,11 +35,37 @@ class KnowledgeGraph:
         """Retrieve a node by ID."""
         return self._nodes.get(node_id)
 
-    def update_node(self, node: Node) -> None:
-        """Update an existing node."""
-        if node.id not in self._nodes:
-            raise KeyError(f"Node {node.id} not in graph")
-        self._nodes[node.id] = node
+    def update_node(self, node_or_id, **kwargs) -> None:
+        """Update an existing node.
+
+        Can be called two ways:
+        1. update_node(node) - replace with new Node object
+        2. update_node(node_id, **kwargs) - update specific attributes
+
+        Args:
+            node_or_id: Either a Node object or a node ID string.
+            **kwargs: Attributes to update (only for ID-based updates).
+        """
+        if isinstance(node_or_id, Node):
+            # Original behavior: replace entire node
+            if node_or_id.id not in self._nodes:
+                raise KeyError(f"Node {node_or_id.id} not in graph")
+            self._nodes[node_or_id.id] = node_or_id
+        else:
+            # New behavior: update specific attributes
+            node_id = node_or_id
+            if node_id not in self._nodes:
+                raise KeyError(f"Node {node_id} not in graph")
+            old_node = self._nodes[node_id]
+
+            # Create new node with updated attributes
+            self._nodes[node_id] = Node(
+                id=old_node.id,
+                hdv=kwargs.get("hdv", old_node.hdv),
+                strength=kwargs.get("strength", old_node.strength),
+                last_accessed=kwargs.get("last_accessed", old_node.last_accessed),
+                content=kwargs.get("content", old_node.content),
+            )
 
     def remove_node(self, node_id: str) -> None:
         """Remove a node and all its edges."""
@@ -79,18 +105,31 @@ class KnowledgeGraph:
         """Get all nodes that point to target."""
         return self._incoming.get(target_id, set()).copy()
 
+    # Aliases for spreading activation compatibility
+    def get_outgoing(self, node_id: str) -> set[str]:
+        """Alias for get_targets - get all nodes this node points to."""
+        return self.get_targets(node_id)
+
+    def get_incoming(self, node_id: str) -> set[str]:
+        """Alias for get_sources - get all nodes that point to this node."""
+        return self.get_sources(node_id)
+
     def find_similar(
         self,
         query_hdv,
         top_k: int = 10,
-        min_energy: float = 0.0,
+        min_strength: float = 0.0,
+        current_time: float = 0.0,
+        use_effective_strength: bool = False,
     ) -> list[tuple[str, float]]:
         """Find nodes most similar to query HDV.
 
         Args:
             query_hdv: DistributionalHDV to compare against.
             top_k: Maximum number of results.
-            min_energy: Minimum energy threshold for results.
+            min_strength: Minimum strength threshold for results.
+            current_time: Current timestamp (for effective strength).
+            use_effective_strength: If True, use effective strength with recency.
 
         Returns:
             List of (node_id, similarity) tuples, sorted by similarity descending.
@@ -98,8 +137,13 @@ class KnowledgeGraph:
         results = []
 
         for node_id, node in self._nodes.items():
-            if node.energy < min_energy:
-                continue
+            if use_effective_strength:
+                eff_strength = node.get_effective_strength(current_time)
+                if eff_strength < min_strength:
+                    continue
+            else:
+                if node.strength < min_strength:
+                    continue
 
             sim, _ = distributional_similarity(query_hdv, node.hdv)
             results.append((node_id, sim))

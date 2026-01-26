@@ -15,16 +15,16 @@ class StrategyMatcher:
     def __init__(
         self,
         min_similarity: float = 0.3,
-        min_energy: float = 0.1,
+        min_strength: float = 0.1,
     ):
         """Initialize matcher.
 
         Args:
             min_similarity: Minimum HDV similarity to consider a match.
-            min_energy: Minimum strategy energy to consider.
+            min_strength: Minimum strategy strength to consider.
         """
         self.min_similarity = min_similarity
-        self.min_energy = min_energy
+        self.min_strength = min_strength
 
     def find_strategies(
         self,
@@ -50,7 +50,7 @@ class StrategyMatcher:
             if not node or not is_strategy_node(node):
                 continue
 
-            if node.energy < self.min_energy:
+            if node.strength < self.min_strength:
                 continue
 
             # Compute similarity
@@ -59,13 +59,13 @@ class StrategyMatcher:
             if sim < self.min_similarity:
                 continue
 
-            # Score combines similarity and mass
-            score = sim * node.mass
+            # Score combines similarity and strength
+            score = sim * node.strength
 
             matches.append({
                 "strategy_id": node_id,
                 "similarity": sim,
-                "mass": node.mass,
+                "strength": node.strength,
                 "score": score,
                 "strategy_type": get_strategy_type(node),
             })

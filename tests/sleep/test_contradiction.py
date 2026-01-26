@@ -64,7 +64,8 @@ class TestContradictionDetector:
             uncertainty_node = graph.get_node(uncertainty_id)
 
             assert uncertainty_node is not None
-            assert uncertainty_node.energy == 1.0  # High energy
+            # New uncertainty nodes have low strength (not established yet)
+            assert uncertainty_node.strength == 0.1
 
             # Should link to contradicting nodes
             sources = graph.get_sources(uncertainty_id)

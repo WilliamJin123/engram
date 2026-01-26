@@ -9,8 +9,7 @@ def create_strategy_node(
     hdv: DistributionalHDV,
     strategy_type: str,
     description: str = None,
-    mass: float = 1.0,
-    energy: float = 1.0,
+    strength: float = 1.0,
 ) -> Node:
     """Create a strategy node.
 
@@ -22,8 +21,7 @@ def create_strategy_node(
         hdv: HDV representing what kinds of uncertainties this applies to.
         strategy_type: Type of strategy (e.g., 'web_search', 'ask_human').
         description: Human-readable description.
-        mass: Initial mass (trustworthiness).
-        energy: Initial energy.
+        strength: Initial strength (trustworthiness).
 
     Returns:
         A Node configured as a strategy.
@@ -37,8 +35,8 @@ def create_strategy_node(
     return Node(
         id=node_id,
         hdv=hdv,
-        mass=mass,
-        energy=energy,
+        strength=strength,
+        last_accessed=0.0,
         content=content,
     )
 

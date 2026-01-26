@@ -166,47 +166,47 @@ def bayesian_update(
     )
 
 
-def bayesian_update_with_mass(
+def bayesian_update_with_strength(
     prior: DistributionalHDV,
     observation: torch.Tensor,
     obs_variance: torch.Tensor,
-    mass: float,
+    strength: float,
     current_time: float,
 ) -> DistributionalHDV:
-    """Perform mass-modulated Bayesian update.
+    """Perform strength-modulated Bayesian update.
 
-    High-mass nodes resist change more than low-mass nodes.
+    High-strength nodes resist change more than low-strength nodes.
     This implements "certainty resistance" where well-established
     beliefs are harder to shift.
 
-    The mass modulates the effective prior variance:
-    - High mass = artificially lower effective variance = trust prior more
-    - Low mass = normal behavior = observation has more influence
+    The strength modulates the effective prior variance:
+    - High strength = artificially lower effective variance = trust prior more
+    - Low strength = normal behavior = observation has more influence
 
     Args:
         prior: Current belief distribution.
         observation: New observed HDV.
         obs_variance: Variance/uncertainty of the observation.
-        mass: Node mass (importance/confidence, > 0).
+        strength: Node strength (importance/confidence, > 0).
         current_time: Current timestamp.
 
     Returns:
         New DistributionalHDV representing posterior belief.
     """
-    # Mass resistance: higher mass = prior is treated as more certain
+    # Strength resistance: higher strength = prior is treated as more certain
     # Using log scale to prevent extreme values
-    mass_resistance = 1.0 + torch.log1p(torch.tensor(mass)).item()
+    strength_resistance = 1.0 + torch.log1p(torch.tensor(strength)).item()
 
-    # Effective prior variance is reduced by mass (prior appears more certain)
-    effective_prior_var = prior.variance / mass_resistance
+    # Effective prior variance is reduced by strength (prior appears more certain)
+    effective_prior_var = prior.variance / strength_resistance
 
-    # Kalman gain with mass-adjusted variance
+    # Kalman gain with strength-adjusted variance
     K = effective_prior_var / (effective_prior_var + obs_variance)
 
-    # Update mean: high mass = smaller K = less movement
+    # Update mean: high strength = smaller K = less movement
     posterior_mean = prior.mean + K * (observation - prior.mean)
 
-    # Update variance: high mass = less reduction
+    # Update variance: high strength = less reduction
     posterior_variance = (1 - K) * prior.variance
 
     return DistributionalHDV(
@@ -215,6 +215,10 @@ def bayesian_update_with_mass(
         last_accessed=current_time,
         last_updated=current_time,
     )
+
+
+# Alias for backwards compatibility
+bayesian_update_with_mass = bayesian_update_with_strength
 
 
 def temporal_decay(

@@ -71,15 +71,15 @@ class TestKnowledgeGraph:
         graph = KnowledgeGraph()
 
         hdv = random_distributional(dim, seed=42)
-        node = Node(id="concept", hdv=hdv, mass=1.0)
+        node = Node(id="concept", hdv=hdv, strength=1.0)
         graph.add_node(node)
 
         # Update the node
-        updated = node.reinforce(mass_boost=0.5)
+        updated = node.reinforce(boost=0.5)
         graph.update_node(updated)
 
         retrieved = graph.get_node("concept")
-        assert retrieved.mass == 1.5
+        assert retrieved.strength == 1.5
 
     def test_remove_node_and_edges(self, dim):
         """Removing a node removes associated edges."""

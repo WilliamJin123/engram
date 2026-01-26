@@ -15,16 +15,16 @@ class Clusterer(SleepAgent):
     def __init__(
         self,
         similarity_threshold: float = 0.7,
-        min_energy: float = 0.0,
+        min_strength: float = 0.0,
     ):
         """Initialize clusterer.
 
         Args:
             similarity_threshold: Minimum similarity to be in same cluster.
-            min_energy: Minimum energy for nodes to be considered.
+            min_strength: Minimum strength for nodes to be considered.
         """
         self.similarity_threshold = similarity_threshold
-        self.min_energy = min_energy
+        self.min_strength = min_strength
 
     def run(self, graph: KnowledgeGraph) -> dict:
         """Run clustering and return results."""
@@ -50,7 +50,7 @@ class Clusterer(SleepAgent):
         eligible = []
         for node_id in self._get_all_node_ids(graph):
             node = graph.get_node(node_id)
-            if node and node.energy >= self.min_energy:
+            if node and node.strength >= self.min_strength:
                 eligible.append(node_id)
 
         if not eligible:

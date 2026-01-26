@@ -56,15 +56,15 @@ class TestAbstractor:
             targets = graph.get_targets(instance_id)
             assert "dog_concept" in targets
 
-    def test_concept_starts_with_low_mass(self, dim):
-        """Newly created concepts start with low mass."""
+    def test_concept_starts_with_low_strength(self, dim):
+        """Newly created concepts start with low strength."""
         graph = KnowledgeGraph()
 
         for i in range(3):
             hdv = random_distributional(dim, seed=1)
             graph.add_node(Node(id=f"node_{i}", hdv=hdv))
 
-        abstractor = Abstractor(initial_concept_mass=0.5)
+        abstractor = Abstractor(initial_concept_strength=0.5)
         abstractor.abstract_cluster(
             graph,
             {"node_0", "node_1", "node_2"},
@@ -72,7 +72,7 @@ class TestAbstractor:
         )
 
         concept = graph.get_node("concept")
-        assert concept.mass == 0.5
+        assert concept.strength == 0.5
 
     def test_returns_created_concept_id(self, dim):
         """Abstractor returns info about what it created."""

@@ -71,21 +71,21 @@ class TestClusterer:
         for cluster in clusters:
             assert len(cluster) == 1
 
-    def test_respects_energy_threshold(self, dim):
-        """Low-energy nodes can be excluded from clustering."""
+    def test_respects_strength_threshold(self, dim):
+        """Low-strength nodes can be excluded from clustering."""
         graph = KnowledgeGraph()
 
         hdv = random_distributional(dim, seed=1)
-        graph.add_node(Node(id="active", hdv=hdv, energy=1.0))
-        graph.add_node(Node(id="dormant", hdv=hdv, energy=0.1))
+        graph.add_node(Node(id="strong", hdv=hdv, strength=1.0))
+        graph.add_node(Node(id="weak", hdv=hdv, strength=0.1))
 
-        clusterer = Clusterer(similarity_threshold=0.9, min_energy=0.5)
+        clusterer = Clusterer(similarity_threshold=0.9, min_strength=0.5)
         clusters = clusterer.find_clusters(graph)
 
-        # Dormant should be excluded
+        # Weak should be excluded
         all_nodes = set()
         for cluster in clusters:
             all_nodes.update(cluster)
 
-        assert "active" in all_nodes
-        assert "dormant" not in all_nodes
+        assert "strong" in all_nodes
+        assert "weak" not in all_nodes

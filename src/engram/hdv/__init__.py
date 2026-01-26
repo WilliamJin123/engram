@@ -11,7 +11,8 @@ from .uncertainty import (
     symmetric_kl,
     distributional_similarity,
     bayesian_update,
-    bayesian_update_with_mass,
+    bayesian_update_with_strength,
+    bayesian_update_with_mass,  # Backwards compatibility alias
     temporal_decay,
     human_confirm,
     handle_contradiction,
@@ -44,7 +45,8 @@ __all__ = [
     "kl_divergence",
     "symmetric_kl",
     "bayesian_update",
-    "bayesian_update_with_mass",
+    "bayesian_update_with_strength",
+    "bayesian_update_with_mass",  # Backwards compatibility alias
     "temporal_decay",
     "human_confirm",
     "handle_contradiction",

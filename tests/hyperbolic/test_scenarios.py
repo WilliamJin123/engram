@@ -197,8 +197,8 @@ class TestHyperbolicScenarios:
         parent_hdv = random_distributional(dim=100, seed=42)
         child_hdv = random_distributional(dim=100, seed=43)
 
-        parent = Node(id="parent", hdv=parent_hdv, mass=5.0)
-        child = Node(id="child", hdv=child_hdv, mass=1.0)
+        parent = Node(id="parent", hdv=parent_hdv, strength=5.0)
+        child = Node(id="child", hdv=child_hdv, strength=1.0)
 
         nodes = {"parent": parent, "child": child}
         edges = [Edge(source="child", target="parent")]
@@ -216,7 +216,7 @@ class TestHyperbolicScenarios:
 
         # Root node (no parents) near origin
         root_hdv = random_distributional(dim=100, seed=1)
-        root = Node(id="root", hdv=root_hdv, mass=10.0)
+        root = Node(id="root", hdv=root_hdv, strength=10.0)
         pos_root = compute_hybrid_position(root, {"root": root}, [])
         assert torch.norm(pos_root).item() < 0.3
 
@@ -225,9 +225,9 @@ class TestHyperbolicScenarios:
         similar_hdv = random_distributional(dim=100, seed=42)  # Same seed = same HDV
         different_hdv = random_distributional(dim=100, seed=99)
 
-        node_a = Node(id="a", hdv=base_hdv, mass=1.0)
-        node_b = Node(id="b", hdv=similar_hdv, mass=1.0)
-        node_c = Node(id="c", hdv=different_hdv, mass=1.0)
+        node_a = Node(id="a", hdv=base_hdv, strength=1.0)
+        node_b = Node(id="b", hdv=similar_hdv, strength=1.0)
+        node_c = Node(id="c", hdv=different_hdv, strength=1.0)
 
         nodes_abc = {"a": node_a, "b": node_b, "c": node_c}
         pos_a = compute_hybrid_position(node_a, nodes_abc, [])
@@ -244,9 +244,9 @@ class TestHyperbolicScenarios:
         cos_ac = torch.dot(dir_a, dir_c).item()
         assert cos_ab > cos_ac
 
-        # High mass nodes closer to origin
-        low_mass = Node(id="low", hdv=parent_hdv, mass=0.1)
-        high_mass = Node(id="high", hdv=parent_hdv, mass=100.0)
-        pos_low = compute_hybrid_position(low_mass, {"low": low_mass}, [])
-        pos_high = compute_hybrid_position(high_mass, {"high": high_mass}, [])
+        # High strength nodes closer to origin
+        low_strength = Node(id="low", hdv=parent_hdv, strength=0.1)
+        high_strength = Node(id="high", hdv=parent_hdv, strength=100.0)
+        pos_low = compute_hybrid_position(low_strength, {"low": low_strength}, [])
+        pos_high = compute_hybrid_position(high_strength, {"high": high_strength}, [])
         assert torch.norm(pos_high) < torch.norm(pos_low)
