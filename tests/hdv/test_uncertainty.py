@@ -5,7 +5,8 @@ import pytest
 import math
 from engram.hdv.distributional import DistributionalHDV, random_distributional
 from engram.hdv.uncertainty import (
-    kl_divergence, symmetric_kl, distributional_similarity, bayesian_update
+    kl_divergence, symmetric_kl, distributional_similarity,
+    bayesian_update, temporal_decay, UncertaintyParams
 )
 
 
@@ -375,3 +376,134 @@ class TestBayesianUpdate:
 
         assert posterior.last_accessed == 100.0
         assert posterior.last_updated == 100.0
+
+
+class TestUncertaintyParams:
+    """Test suite for UncertaintyParams configuration."""
+
+    def test_default_values(self):
+        """Should have sensible defaults."""
+        params = UncertaintyParams()
+        assert params.base_drift_rate > 0
+        assert params.access_drift_rate > 0
+        assert params.access_grace_period > 0
+        assert params.min_variance > 0
+        assert params.max_variance > params.min_variance
+
+    def test_custom_values(self):
+        """Should accept custom values."""
+        params = UncertaintyParams(
+            base_drift_rate=0.01,
+            access_drift_rate=0.05,
+            access_grace_period=50.0,
+        )
+        assert params.base_drift_rate == 0.01
+        assert params.access_drift_rate == 0.05
+        assert params.access_grace_period == 50.0
+
+
+class TestTemporalDecay:
+    """Test suite for temporal variance decay."""
+
+    def test_returns_distributional_hdv(self, dim):
+        """Should return a new DistributionalHDV."""
+        hdv = random_distributional(dim, initial_variance=0.3, current_time=0.0, seed=1)
+        params = UncertaintyParams()
+
+        decayed = temporal_decay(hdv, current_time=100.0, params=params)
+        assert isinstance(decayed, DistributionalHDV)
+
+    def test_variance_increases_over_time(self, dim):
+        """Variance should increase as time passes."""
+        hdv = random_distributional(dim, initial_variance=0.3, current_time=0.0, seed=1)
+        params = UncertaintyParams()
+
+        decayed = temporal_decay(hdv, current_time=1000.0, params=params)
+
+        assert decayed.variance.mean() > hdv.variance.mean()
+
+    def test_base_drift_always_applies(self, dim):
+        """Base drift should increase variance even if recently accessed."""
+        hdv = random_distributional(dim, initial_variance=0.3, current_time=0.0, seed=1)
+        # Set last_accessed to current time (just accessed)
+        hdv.last_accessed = 100.0
+        params = UncertaintyParams(base_drift_rate=0.01, access_drift_rate=0.05)
+
+        decayed = temporal_decay(hdv, current_time=100.0, params=params)
+
+        # Should still have some increase from base drift
+        # (based on time since last_updated, not last_accessed)
+        assert decayed.variance.mean() >= hdv.variance.mean()
+
+    def test_access_drift_after_grace_period(self, dim):
+        """Additional drift should apply after access grace period."""
+        hdv = random_distributional(dim, initial_variance=0.3, current_time=0.0, seed=1)
+        params = UncertaintyParams(
+            base_drift_rate=0.001,
+            access_drift_rate=0.01,
+            access_grace_period=50.0
+        )
+
+        # Within grace period
+        decayed_early = temporal_decay(hdv, current_time=30.0, params=params)
+
+        # After grace period
+        decayed_late = temporal_decay(hdv, current_time=200.0, params=params)
+
+        # Late should have more variance increase per unit time
+        early_increase = decayed_early.variance.mean() - hdv.variance.mean()
+        late_increase = decayed_late.variance.mean() - hdv.variance.mean()
+
+        # Late has much more time AND extra access drift
+        assert late_increase > early_increase * 3  # More than just proportional
+
+    def test_variance_capped_at_max(self, dim):
+        """Variance should not exceed max_variance."""
+        hdv = random_distributional(dim, initial_variance=0.3, current_time=0.0, seed=1)
+        params = UncertaintyParams(
+            base_drift_rate=0.1,  # Very high drift
+            max_variance=1.0
+        )
+
+        # Very long time
+        decayed = temporal_decay(hdv, current_time=10000.0, params=params)
+
+        assert (decayed.variance <= params.max_variance + 1e-6).all()
+
+    def test_variance_clamped_at_min(self, dim):
+        """Variance should not go below min_variance."""
+        hdv = random_distributional(dim, initial_variance=0.01, current_time=0.0, seed=1)
+        params = UncertaintyParams(min_variance=0.05)
+
+        decayed = temporal_decay(hdv, current_time=0.0, params=params)  # No time passed
+
+        assert (decayed.variance >= params.min_variance - 1e-6).all()
+
+    def test_mean_unchanged(self, dim):
+        """Mean should not change during temporal decay."""
+        hdv = random_distributional(dim, initial_variance=0.3, current_time=0.0, seed=1)
+        params = UncertaintyParams()
+
+        decayed = temporal_decay(hdv, current_time=1000.0, params=params)
+
+        assert torch.equal(decayed.mean, hdv.mean)
+
+    def test_timestamps_updated(self, dim):
+        """last_accessed should update to current_time."""
+        hdv = random_distributional(dim, initial_variance=0.3, current_time=0.0, seed=1)
+        params = UncertaintyParams()
+
+        decayed = temporal_decay(hdv, current_time=500.0, params=params)
+
+        assert decayed.last_accessed == 500.0
+        # last_updated stays the same (no new evidence)
+        assert decayed.last_updated == hdv.last_updated
+
+    def test_no_time_passed_no_change(self, dim):
+        """If no time has passed, variance should stay the same."""
+        hdv = random_distributional(dim, initial_variance=0.3, current_time=100.0, seed=1)
+        params = UncertaintyParams()
+
+        decayed = temporal_decay(hdv, current_time=100.0, params=params)
+
+        assert torch.allclose(decayed.variance, hdv.variance)

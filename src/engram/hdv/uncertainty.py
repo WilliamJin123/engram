@@ -1,7 +1,34 @@
 """Uncertainty calculations for distributional HDVs."""
 
 import torch
+from dataclasses import dataclass
 from .distributional import DistributionalHDV
+
+
+@dataclass
+class UncertaintyParams:
+    """Configuration parameters for uncertainty dynamics.
+
+    Attributes:
+        base_drift_rate: Variance increase per time unit (always applies).
+        access_drift_rate: Additional variance increase when not accessed.
+        access_grace_period: Time before access drift kicks in.
+        min_variance: Floor for variance (never perfectly certain).
+        max_variance: Ceiling for variance (complete uncertainty).
+        human_confirmation_factor: Multiply variance by this on confirmation.
+        contradiction_scale: How much contradictions increase variance.
+        kl_scale: Scaling factor for similarity calculation.
+        base_edge_variance: Variance added by uncertain edges.
+    """
+    base_drift_rate: float = 0.001
+    access_drift_rate: float = 0.01
+    access_grace_period: float = 100.0
+    min_variance: float = 0.01
+    max_variance: float = 2.0
+    human_confirmation_factor: float = 0.01
+    contradiction_scale: float = 0.5
+    kl_scale: float = 1.0
+    base_edge_variance: float = 0.1
 
 
 def kl_divergence(p: DistributionalHDV, q: DistributionalHDV) -> float:
@@ -136,4 +163,54 @@ def bayesian_update(
         variance=posterior_variance,
         last_accessed=current_time,
         last_updated=current_time,
+    )
+
+
+def temporal_decay(
+    hdv: DistributionalHDV,
+    current_time: float,
+    params: UncertaintyParams,
+) -> DistributionalHDV:
+    """Apply temporal variance decay (memories become uncertain over time).
+
+    Two decay components:
+    1. Base drift: Always applies, based on time since last update
+    2. Access drift: Additional decay when not accessed recently
+
+    Args:
+        hdv: The distributional HDV to decay.
+        current_time: Current timestamp.
+        params: Uncertainty parameters.
+
+    Returns:
+        New DistributionalHDV with increased variance.
+    """
+    # Time since last update (for base drift)
+    dt_update = max(0.0, current_time - hdv.last_updated)
+
+    # Time since last access (for access drift)
+    dt_access = max(0.0, current_time - hdv.last_accessed)
+
+    # Base drift: always applies
+    base_drift = params.base_drift_rate * dt_update
+
+    # Access drift: kicks in after grace period
+    if dt_access > params.access_grace_period:
+        excess_time = dt_access - params.access_grace_period
+        access_drift = params.access_drift_rate * excess_time
+    else:
+        access_drift = 0.0
+
+    # Apply multiplicatively (variance grows)
+    total_drift = 1.0 + base_drift + access_drift
+    new_variance = hdv.variance * total_drift
+
+    # Clamp to bounds
+    new_variance = torch.clamp(new_variance, min=params.min_variance, max=params.max_variance)
+
+    return DistributionalHDV(
+        mean=hdv.mean,  # Mean unchanged
+        variance=new_variance,
+        last_accessed=current_time,  # Update access time
+        last_updated=hdv.last_updated,  # Keep original update time
     )
