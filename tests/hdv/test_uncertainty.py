@@ -4,10 +4,11 @@ import torch
 import pytest
 import math
 from engram.hdv.distributional import DistributionalHDV, random_distributional
+from engram.graph.edge import Edge
 from engram.hdv.uncertainty import (
     kl_divergence, symmetric_kl, distributional_similarity,
     bayesian_update, temporal_decay, UncertaintyParams, human_confirm,
-    handle_contradiction, bundle_observations
+    handle_contradiction, bundle_observations, propagate_through_edge
 )
 
 
@@ -782,3 +783,103 @@ class TestBundleObservations:
 
         with pytest.raises(ValueError, match="mismatch"):
             bundle_observations([(mean1, var1), (mean2, var2)], current_time=1.0)
+
+
+class TestPropagateThroughEdge:
+    """Test suite for propagation with edge uncertainty."""
+
+    def test_returns_distributional_hdv(self, dim):
+        """Should return a DistributionalHDV."""
+        source = random_distributional(dim, seed=1)
+        edge = Edge(source="a", target="b", edge_type="IS_A", confidence=0.8)
+        edge_hdv = torch.randn(dim)
+        params = UncertaintyParams()
+
+        result = propagate_through_edge(source, edge, edge_hdv, params)
+        assert isinstance(result, DistributionalHDV)
+
+    def test_mean_transforms_via_bind(self, dim):
+        """Mean should be transformed by binding with edge HDV."""
+        source = random_distributional(dim, seed=1)
+        edge = Edge(source="a", target="b", edge_type="IS_A", confidence=1.0)
+        edge_hdv = torch.randn(dim)
+        params = UncertaintyParams()
+
+        result = propagate_through_edge(source, edge, edge_hdv, params)
+
+        expected_mean = source.mean * edge_hdv
+        assert torch.allclose(result.mean, expected_mean)
+
+    def test_variance_increases(self, dim):
+        """Variance should increase after propagation."""
+        source = random_distributional(dim, initial_variance=0.3, seed=1)
+        edge = Edge(source="a", target="b", edge_type="IS_A", confidence=0.8)
+        edge_hdv = torch.randn(dim)
+        params = UncertaintyParams()
+
+        result = propagate_through_edge(source, edge, edge_hdv, params)
+
+        assert result.variance.mean() > source.variance.mean()
+
+    def test_low_confidence_edge_more_variance(self, dim):
+        """Lower confidence edge should add more variance."""
+        source = random_distributional(dim, initial_variance=0.3, seed=1)
+        edge_hdv = torch.randn(dim)
+        params = UncertaintyParams(base_edge_variance=0.2)
+
+        high_conf_edge = Edge(source="a", target="b", edge_type="IS_A", confidence=0.9)
+        low_conf_edge = Edge(source="a", target="b", edge_type="IS_A", confidence=0.3)
+
+        result_high = propagate_through_edge(source, high_conf_edge, edge_hdv, params)
+        result_low = propagate_through_edge(source, low_conf_edge, edge_hdv, params)
+
+        assert result_low.variance.mean() > result_high.variance.mean()
+
+    def test_certain_edge_minimal_variance_increase(self, dim):
+        """Confidence=1.0 edge should add minimal variance."""
+        source = random_distributional(dim, initial_variance=0.3, seed=1)
+        edge = Edge(source="a", target="b", edge_type="IS_A", confidence=1.0)
+        edge_hdv = torch.randn(dim)
+        params = UncertaintyParams(base_edge_variance=0.2)
+
+        result = propagate_through_edge(source, edge, edge_hdv, params)
+
+        # Variance increase should be minimal (only from the bind operation)
+        # Not from edge uncertainty
+        var_increase = result.variance.mean() - source.variance.mean()
+        # With confidence=1.0, edge_uncertainty contribution is 0
+        # So increase is only from the binding operation
+        assert var_increase < 0.3  # Reasonable bound
+
+    def test_completely_uncertain_edge_max_variance_increase(self, dim):
+        """Confidence=0.0 edge should add maximum edge variance."""
+        source = random_distributional(dim, initial_variance=0.3, seed=1)
+        edge = Edge(source="a", target="b", edge_type="IS_A", confidence=0.0)
+        edge_hdv = torch.randn(dim)
+        params = UncertaintyParams(base_edge_variance=0.5)
+
+        result = propagate_through_edge(source, edge, edge_hdv, params)
+
+        # Should have added significant variance from edge uncertainty
+        assert result.variance.mean() > source.variance.mean() + 0.3
+
+    def test_multi_hop_accumulates_variance(self, dim):
+        """Multiple propagation hops should accumulate variance."""
+        source = random_distributional(dim, initial_variance=0.2, seed=1)
+        edge = Edge(source="a", target="b", edge_type="IS_A", confidence=0.8)
+        edge_hdv = torch.randn(dim)
+        params = UncertaintyParams(base_edge_variance=0.1)
+
+        # One hop
+        hop1 = propagate_through_edge(source, edge, edge_hdv, params)
+
+        # Two hops
+        hop2 = propagate_through_edge(hop1, edge, edge_hdv, params)
+
+        # Three hops
+        hop3 = propagate_through_edge(hop2, edge, edge_hdv, params)
+
+        # Variance should strictly increase with each hop
+        assert hop1.variance.mean() > source.variance.mean()
+        assert hop2.variance.mean() > hop1.variance.mean()
+        assert hop3.variance.mean() > hop2.variance.mean()
