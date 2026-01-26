@@ -5,7 +5,7 @@ import pytest
 import math
 from engram.hdv.distributional import DistributionalHDV, random_distributional
 from engram.hdv.uncertainty import (
-    kl_divergence, symmetric_kl, distributional_similarity
+    kl_divergence, symmetric_kl, distributional_similarity, bayesian_update
 )
 
 
@@ -238,3 +238,140 @@ class TestDistributionalSimilarity:
 
         # Should be low but positive (hyperbolic never reaches 0)
         assert 0.0 < sim < 0.1
+
+
+class TestBayesianUpdate:
+    """Test suite for Kalman-style Bayesian updates."""
+
+    def test_returns_distributional_hdv(self, dim):
+        """Should return a new DistributionalHDV."""
+        prior = random_distributional(dim, initial_variance=0.5, seed=1)
+        observation = torch.randn(dim)
+        obs_variance = torch.ones(dim) * 0.3
+
+        posterior = bayesian_update(prior, observation, obs_variance, current_time=1.0)
+        assert isinstance(posterior, DistributionalHDV)
+
+    def test_preserves_dimension(self, dim):
+        """Posterior should have same dimension as prior."""
+        prior = random_distributional(dim, initial_variance=0.5, seed=1)
+        observation = torch.randn(dim)
+        obs_variance = torch.ones(dim) * 0.3
+
+        posterior = bayesian_update(prior, observation, obs_variance, current_time=1.0)
+        assert posterior.dim == dim
+
+    def test_variance_always_decreases(self, dim):
+        """Posterior variance should be <= prior variance (we gained information)."""
+        prior = random_distributional(dim, initial_variance=0.5, seed=1)
+        observation = torch.randn(dim)
+        obs_variance = torch.ones(dim) * 0.3
+
+        posterior = bayesian_update(prior, observation, obs_variance, current_time=1.0)
+
+        # Every dimension should have reduced or equal variance
+        assert (posterior.variance <= prior.variance + 1e-6).all()
+
+    def test_mean_moves_toward_observation(self, dim):
+        """Posterior mean should move toward observation."""
+        prior = random_distributional(dim, initial_variance=0.5, seed=1)
+        observation = torch.randn(dim) * 2  # Far from origin
+        obs_variance = torch.ones(dim) * 0.3
+
+        posterior = bayesian_update(prior, observation, obs_variance, current_time=1.0)
+
+        # Distance to observation should decrease
+        dist_before = torch.norm(prior.mean - observation)
+        dist_after = torch.norm(posterior.mean - observation)
+        assert dist_after < dist_before
+
+    def test_low_obs_variance_bigger_shift(self, dim):
+        """Lower observation variance (high confidence) should shift mean more."""
+        prior = random_distributional(dim, initial_variance=0.5, seed=1)
+        observation = torch.ones(dim)  # Same observation
+
+        # High confidence observation
+        posterior_confident = bayesian_update(
+            prior, observation, torch.ones(dim) * 0.1, current_time=1.0
+        )
+        # Low confidence observation
+        posterior_uncertain = bayesian_update(
+            prior, observation, torch.ones(dim) * 1.0, current_time=1.0
+        )
+
+        # Confident observation should move mean more
+        shift_confident = torch.norm(posterior_confident.mean - prior.mean)
+        shift_uncertain = torch.norm(posterior_uncertain.mean - prior.mean)
+        assert shift_confident > shift_uncertain
+
+    def test_low_obs_variance_bigger_variance_reduction(self, dim):
+        """Lower observation variance should reduce posterior variance more."""
+        prior = random_distributional(dim, initial_variance=0.5, seed=1)
+        observation = torch.ones(dim)
+
+        posterior_confident = bayesian_update(
+            prior, observation, torch.ones(dim) * 0.1, current_time=1.0
+        )
+        posterior_uncertain = bayesian_update(
+            prior, observation, torch.ones(dim) * 1.0, current_time=1.0
+        )
+
+        # Confident observation should reduce variance more
+        assert posterior_confident.variance.mean() < posterior_uncertain.variance.mean()
+
+    def test_kalman_gain_formula(self):
+        """Validate against analytical Kalman filter formula.
+
+        K = prior_var / (prior_var + obs_var)
+        posterior_var = (1 - K) * prior_var
+        posterior_mean = prior_mean + K * (obs - prior_mean)
+        """
+        prior_var = 0.5
+        obs_var = 0.3
+        prior_mean_val = 1.0
+        obs_val = 2.0
+
+        prior = DistributionalHDV(
+            mean=torch.tensor([prior_mean_val]),
+            variance=torch.tensor([prior_var])
+        )
+        observation = torch.tensor([obs_val])
+        obs_variance = torch.tensor([obs_var])
+
+        posterior = bayesian_update(prior, observation, obs_variance, current_time=1.0)
+
+        # Analytical solution
+        K = prior_var / (prior_var + obs_var)
+        expected_var = (1 - K) * prior_var
+        expected_mean = prior_mean_val + K * (obs_val - prior_mean_val)
+
+        assert posterior.variance[0].item() == pytest.approx(expected_var, rel=0.01)
+        assert posterior.mean[0].item() == pytest.approx(expected_mean, rel=0.01)
+
+    def test_multiple_updates_converge(self, dim):
+        """Multiple observations should converge mean and reduce variance."""
+        prior = random_distributional(dim, initial_variance=1.0, seed=1)
+        target = torch.ones(dim) * 0.5  # True value we're observing
+
+        current = prior
+        for i in range(10):
+            # Observe with some noise
+            noisy_obs = target + torch.randn(dim) * 0.1
+            current = bayesian_update(
+                current, noisy_obs, torch.ones(dim) * 0.2, current_time=float(i)
+            )
+
+        # Should be close to target with low variance
+        assert torch.norm(current.mean - target) < torch.norm(prior.mean - target)
+        assert current.variance.mean() < prior.variance.mean()
+
+    def test_timestamps_updated(self, dim):
+        """Should update timestamps to current_time."""
+        prior = random_distributional(dim, current_time=0.0, seed=1)
+        observation = torch.randn(dim)
+        obs_variance = torch.ones(dim) * 0.3
+
+        posterior = bayesian_update(prior, observation, obs_variance, current_time=100.0)
+
+        assert posterior.last_accessed == 100.0
+        assert posterior.last_updated == 100.0

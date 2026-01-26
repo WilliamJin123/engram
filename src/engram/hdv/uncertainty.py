@@ -96,3 +96,44 @@ def distributional_similarity(
     uncertainty = combined_var / (1.0 + combined_var)
 
     return similarity, uncertainty
+
+
+def bayesian_update(
+    prior: DistributionalHDV,
+    observation: torch.Tensor,
+    obs_variance: torch.Tensor,
+    current_time: float,
+) -> DistributionalHDV:
+    """Perform Kalman-style Bayesian update with new observation.
+
+    Updates the distribution based on new evidence. The posterior:
+    - Has variance that is always <= prior variance (information gain)
+    - Has mean shifted toward observation (weighted by relative confidence)
+
+    Args:
+        prior: Current belief distribution.
+        observation: New observed HDV.
+        obs_variance: Variance/uncertainty of the observation (per-dimension).
+        current_time: Current timestamp.
+
+    Returns:
+        New DistributionalHDV representing posterior belief.
+    """
+    # Kalman gain: how much to trust observation vs prior
+    # K = prior_var / (prior_var + obs_var)
+    # Where K close to 1 means trust observation, K close to 0 means trust prior
+    K = prior.variance / (prior.variance + obs_variance)
+
+    # Update mean: move toward observation, weighted by gain
+    posterior_mean = prior.mean + K * (observation - prior.mean)
+
+    # Update variance: always decreases (we gained information)
+    # posterior_var = (1 - K) * prior_var
+    posterior_variance = (1 - K) * prior.variance
+
+    return DistributionalHDV(
+        mean=posterior_mean,
+        variance=posterior_variance,
+        last_accessed=current_time,
+        last_updated=current_time,
+    )
