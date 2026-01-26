@@ -5,7 +5,13 @@ space is mapped to an open unit ball. Points near the boundary represent points
 "far away" in hyperbolic space, and distances grow exponentially near the boundary.
 """
 
+from typing import TYPE_CHECKING
+
 import torch
+
+if TYPE_CHECKING:
+    from engram.graph import Node, Edge
+    from engram.hdv import DistributionalHDV
 
 
 def project_to_poincare(v: torch.Tensor, eps: float = 1e-5) -> torch.Tensor:
@@ -251,3 +257,163 @@ def is_ancestor(ancestor: torch.Tensor, descendant: torch.Tensor) -> bool:
     threshold = -0.1 + 1.8 * ancestor_norm
 
     return cos_angle > threshold
+
+
+def compute_hybrid_position(
+    node: "Node",
+    nodes: dict[str, "Node"],
+    edges: list["Edge"],
+    dim: int = 2,
+    seed: int | None = None,
+) -> torch.Tensor:
+    """Compute hybrid hyperbolic position for a node.
+
+    Hybrid positioning:
+    - Radius: From graph structure (depth from roots) and mass (high mass = closer to origin)
+    - Angle: From HDV similarity to other nodes
+
+    Args:
+        node: The node to position.
+        nodes: Dictionary of all nodes by ID.
+        edges: List of all edges in the graph.
+        dim: Dimension of the Poincare ball (default 2 for visualization).
+        seed: Optional random seed for reproducibility.
+
+    Returns:
+        Position in the Poincare ball.
+    """
+    from engram.graph import Node, Edge
+    from engram.hdv import distributional_similarity
+
+    gen = torch.Generator().manual_seed(seed) if seed is not None else None
+
+    # Build adjacency: which nodes does this node point to?
+    outgoing = {e.target for e in edges if e.source == node.id}
+    incoming = {e.source for e in edges if e.target == node.id}
+
+    # Compute depth: how many hops to a root (node with no outgoing edges)?
+    # Use BFS from this node following outgoing edges
+    depth = _compute_depth(node.id, edges, nodes)
+
+    # Compute radius from depth and mass
+    # - Deeper nodes -> larger radius
+    # - Higher mass -> smaller radius (more abstract/important)
+    base_radius = 0.1 + 0.15 * depth
+    mass_factor = 1.0 / (1.0 + 0.1 * node.mass)  # High mass pulls toward origin
+    radius = min(0.9, base_radius * mass_factor)
+
+    # Compute angle from HDV similarity to neighbors
+    # If no neighbors, use random direction based on HDV
+    if outgoing or incoming:
+        # Average direction toward similar neighbors
+        neighbor_ids = outgoing | incoming
+        direction = _compute_direction_from_neighbors(
+            node, neighbor_ids, nodes, dim, gen
+        )
+    else:
+        # Use HDV-derived direction for isolated nodes
+        direction = _hdv_to_direction(node.hdv, dim, gen)
+
+    # Combine radius and direction
+    position = direction * radius
+
+    return project_to_poincare(position)
+
+
+def _compute_depth(node_id: str, edges: list, nodes: dict) -> int:
+    """Compute depth of a node (hops to nearest root via outgoing edges)."""
+    visited = set()
+    queue = [(node_id, 0)]
+    min_depth = float('inf')
+
+    # Build outgoing adjacency
+    outgoing = {}
+    for e in edges:
+        if e.source not in outgoing:
+            outgoing[e.source] = []
+        outgoing[e.source].append(e.target)
+
+    while queue:
+        current, depth = queue.pop(0)
+        if current in visited:
+            continue
+        visited.add(current)
+
+        # If no outgoing edges, this is a root
+        if current not in outgoing or not outgoing[current]:
+            min_depth = min(min_depth, depth)
+            continue
+
+        for target in outgoing[current]:
+            if target not in visited and target in nodes:
+                queue.append((target, depth + 1))
+
+    return min_depth if min_depth != float('inf') else 0
+
+
+def _compute_direction_from_neighbors(
+    node: "Node",
+    neighbor_ids: set[str],
+    nodes: dict[str, "Node"],
+    dim: int,
+    gen: torch.Generator | None,
+) -> torch.Tensor:
+    """Compute direction based on HDV similarity to neighbors."""
+    from engram.hdv import distributional_similarity
+
+    # Start with random base direction
+    direction = torch.randn(dim, generator=gen)
+
+    # Weight by similarity to each neighbor
+    total_weight = 0.0
+    weighted_direction = torch.zeros(dim)
+
+    for nid in neighbor_ids:
+        if nid not in nodes:
+            continue
+        neighbor = nodes[nid]
+        sim, _ = distributional_similarity(node.hdv, neighbor.hdv)
+
+        # Use neighbor's HDV to derive a direction contribution
+        neighbor_dir = _hdv_to_direction(neighbor.hdv, dim, gen)
+        weighted_direction += sim * neighbor_dir
+        total_weight += sim
+
+    if total_weight > 0:
+        direction = weighted_direction / total_weight
+    else:
+        direction = _hdv_to_direction(node.hdv, dim, gen)
+
+    # Normalize to unit vector
+    norm = torch.norm(direction)
+    if norm > 1e-6:
+        direction = direction / norm
+    else:
+        direction = torch.randn(dim, generator=gen)
+        direction = direction / torch.norm(direction)
+
+    return direction
+
+
+def _hdv_to_direction(hdv: "DistributionalHDV", dim: int, gen: torch.Generator | None) -> torch.Tensor:
+    """Derive a direction from an HDV by projecting to lower dimension.
+
+    This function is deterministic: same HDV always produces same direction.
+    """
+    # Use first `dim` components of the HDV mean as direction seed
+    # This ensures same HDV -> same direction (deterministic mapping)
+    if hdv.mean.shape[0] >= dim:
+        raw = hdv.mean[:dim].clone()
+    else:
+        # Pad with zeros if HDV is too small
+        raw = torch.zeros(dim)
+        raw[:hdv.mean.shape[0]] = hdv.mean
+
+    norm = torch.norm(raw)
+    if norm > 1e-6:
+        return raw / norm
+    else:
+        # Fallback: use a deterministic direction based on HDV sum
+        fallback = torch.zeros(dim)
+        fallback[0] = 1.0  # Default to x-axis if HDV is all zeros
+        return fallback
