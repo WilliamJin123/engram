@@ -4,7 +4,7 @@ A memory system using distributional High-Dimensional Vectors (HDVs)
 for principled uncertainty tracking in knowledge graphs.
 """
 
-__version__ = "0.2.0"  # Bump for distributional HDV release
+__version__ = "0.3.0"  # Bump for node-centric architecture
 
 from .hdv import (
     DistributionalHDV,
@@ -20,7 +20,7 @@ from .hdv import (
     bundle_observations,
     propagate_through_edge,
 )
-from .graph import Edge
+from .graph import Edge, Node
 
 __all__ = [
     # Version
@@ -29,6 +29,7 @@ __all__ = [
     "DistributionalHDV",
     "UncertaintyParams",
     "Edge",
+    "Node",
     # Factory
     "random_distributional",
     # Operations
