@@ -25,7 +25,7 @@ class UncertaintyParams:
     access_grace_period: float = 100.0
     min_variance: float = 0.01
     max_variance: float = 2.0
-    human_confirmation_factor: float = 0.01
+    human_confirmation_factor: float = 0.1
     contradiction_scale: float = 0.5
     kl_scale: float = 1.0
     base_edge_variance: float = 0.1
@@ -213,4 +213,41 @@ def temporal_decay(
         variance=new_variance,
         last_accessed=current_time,  # Update access time
         last_updated=hdv.last_updated,  # Keep original update time
+    )
+
+
+def human_confirm(
+    hdv: DistributionalHDV,
+    current_time: float,
+    params: UncertaintyParams,
+    confirmed_mean: torch.Tensor | None = None,
+) -> DistributionalHDV:
+    """Apply human confirmation (dramatically reduces uncertainty).
+
+    Human confirmation represents authoritative knowledge that collapses
+    uncertainty. This is the strongest form of evidence in the system.
+
+    Args:
+        hdv: The distributional HDV to confirm.
+        current_time: Current timestamp.
+        params: Uncertainty parameters.
+        confirmed_mean: Optional explicit mean value (if human corrects it).
+
+    Returns:
+        New DistributionalHDV with collapsed variance.
+    """
+    # Use provided mean or keep existing
+    new_mean = confirmed_mean if confirmed_mean is not None else hdv.mean
+
+    # Dramatically reduce variance
+    new_variance = hdv.variance * params.human_confirmation_factor
+
+    # Clamp to minimum (never perfectly certain)
+    new_variance = torch.clamp(new_variance, min=params.min_variance)
+
+    return DistributionalHDV(
+        mean=new_mean,
+        variance=new_variance,
+        last_accessed=current_time,
+        last_updated=current_time,
     )

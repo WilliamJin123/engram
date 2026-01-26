@@ -6,7 +6,7 @@ import math
 from engram.hdv.distributional import DistributionalHDV, random_distributional
 from engram.hdv.uncertainty import (
     kl_divergence, symmetric_kl, distributional_similarity,
-    bayesian_update, temporal_decay, UncertaintyParams
+    bayesian_update, temporal_decay, UncertaintyParams, human_confirm
 )
 
 
@@ -507,3 +507,78 @@ class TestTemporalDecay:
         decayed = temporal_decay(hdv, current_time=100.0, params=params)
 
         assert torch.allclose(decayed.variance, hdv.variance)
+
+
+class TestHumanConfirm:
+    """Test suite for human confirmation (variance collapse)."""
+
+    def test_returns_distributional_hdv(self, dim):
+        """Should return a new DistributionalHDV."""
+        hdv = random_distributional(dim, initial_variance=0.5, seed=1)
+        params = UncertaintyParams()
+
+        confirmed = human_confirm(hdv, current_time=1.0, params=params)
+        assert isinstance(confirmed, DistributionalHDV)
+
+    def test_variance_dramatically_reduced(self, dim):
+        """Variance should be reduced by human_confirmation_factor."""
+        hdv = random_distributional(dim, initial_variance=0.5, seed=1)
+        params = UncertaintyParams(human_confirmation_factor=0.01)
+
+        confirmed = human_confirm(hdv, current_time=1.0, params=params)
+
+        expected_var = hdv.variance * 0.01
+        assert torch.allclose(confirmed.variance, expected_var.clamp(min=params.min_variance))
+
+    def test_variance_respects_minimum(self, dim):
+        """Variance should not go below min_variance."""
+        hdv = random_distributional(dim, initial_variance=0.5, seed=1)
+        params = UncertaintyParams(
+            human_confirmation_factor=0.001,  # Would push below min
+            min_variance=0.02
+        )
+
+        confirmed = human_confirm(hdv, current_time=1.0, params=params)
+
+        assert (confirmed.variance >= params.min_variance - 1e-6).all()
+
+    def test_mean_unchanged_without_explicit(self, dim):
+        """Mean should stay same if no confirmed_mean provided."""
+        hdv = random_distributional(dim, initial_variance=0.5, seed=1)
+        params = UncertaintyParams()
+
+        confirmed = human_confirm(hdv, current_time=1.0, params=params)
+
+        assert torch.equal(confirmed.mean, hdv.mean)
+
+    def test_mean_updated_with_explicit(self, dim):
+        """Mean should change to confirmed_mean if provided."""
+        hdv = random_distributional(dim, initial_variance=0.5, seed=1)
+        params = UncertaintyParams()
+        new_mean = torch.randn(dim)
+
+        confirmed = human_confirm(
+            hdv, current_time=1.0, params=params, confirmed_mean=new_mean
+        )
+
+        assert torch.equal(confirmed.mean, new_mean)
+
+    def test_timestamps_updated(self, dim):
+        """Should update both timestamps."""
+        hdv = random_distributional(dim, initial_variance=0.5, current_time=0.0, seed=1)
+        params = UncertaintyParams()
+
+        confirmed = human_confirm(hdv, current_time=100.0, params=params)
+
+        assert confirmed.last_accessed == 100.0
+        assert confirmed.last_updated == 100.0
+
+    def test_high_variance_becomes_low(self, dim):
+        """Even very uncertain concepts become confident after confirmation."""
+        hdv = random_distributional(dim, initial_variance=1.5, seed=1)  # High uncertainty
+        params = UncertaintyParams(human_confirmation_factor=0.01)
+
+        confirmed = human_confirm(hdv, current_time=1.0, params=params)
+
+        # Should be dramatically lower
+        assert confirmed.variance.mean() < hdv.variance.mean() * 0.1
