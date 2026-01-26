@@ -37,3 +37,40 @@ class DistributionalHDV:
     def dim(self) -> int:
         """Return the dimensionality of this HDV."""
         return self.mean.shape[0]
+
+
+def random_distributional(
+    dim: int,
+    initial_variance: float = 0.5,
+    sparsity: float = 0.5,
+    current_time: float = 0.0,
+    seed: int | None = None,
+) -> DistributionalHDV:
+    """Create a random DistributionalHDV with ternary mean.
+
+    Args:
+        dim: Dimension of the HDV.
+        initial_variance: Uniform variance for all dimensions.
+        sparsity: Fraction of non-zero elements in mean (0-1).
+        current_time: Timestamp for initialization.
+        seed: Random seed for reproducibility.
+
+    Returns:
+        A new DistributionalHDV with random ternary mean.
+    """
+    gen = torch.Generator().manual_seed(seed) if seed is not None else None
+
+    # Generate ternary mean
+    mask = torch.rand(dim, generator=gen) < sparsity
+    signs = 2 * torch.randint(0, 2, (dim,), generator=gen, dtype=torch.float32) - 1
+    mean = signs * mask.float()
+
+    # Uniform variance
+    variance = torch.full((dim,), initial_variance)
+
+    return DistributionalHDV(
+        mean=mean,
+        variance=variance,
+        last_accessed=current_time,
+        last_updated=current_time,
+    )
