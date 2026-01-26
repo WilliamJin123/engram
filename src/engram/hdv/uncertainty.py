@@ -3,7 +3,6 @@
 import torch
 from dataclasses import dataclass
 from .distributional import DistributionalHDV
-from ..graph.edge import Edge
 
 
 @dataclass
@@ -361,8 +360,8 @@ def bundle_observations(
 
 def propagate_through_edge(
     source: DistributionalHDV,
-    edge: Edge,
     edge_hdv: torch.Tensor,
+    edge_variance: float,
     params: UncertaintyParams,
 ) -> DistributionalHDV:
     """Propagate a distributional signal through an edge.
@@ -376,8 +375,8 @@ def propagate_through_edge(
 
     Args:
         source: Source distributional HDV.
-        edge: The edge to propagate through.
-        edge_hdv: The HDV for this edge type.
+        edge_hdv: The HDV for the relationship node this edge passes through.
+        edge_variance: Uncertainty of this edge (0=certain, higher=uncertain).
         params: Uncertainty parameters.
 
     Returns:
@@ -387,8 +386,7 @@ def propagate_through_edge(
     new_mean = source.mean * edge_hdv
 
     # Edge uncertainty contribution
-    # Low confidence = more variance added
-    edge_uncertainty = edge.uncertainty * params.base_edge_variance
+    edge_uncertainty = edge_variance * params.base_edge_variance
 
     # Variance compounds: source variance + edge uncertainty
     new_variance = source.variance + edge_uncertainty

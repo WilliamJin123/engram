@@ -5,7 +5,6 @@ import pytest
 from engram import (
     DistributionalHDV,
     UncertaintyParams,
-    Edge,
     random_distributional,
     distributional_bind,
     distributional_unbind,
@@ -94,13 +93,12 @@ class TestCompleteLifecycle:
         params = UncertaintyParams(base_edge_variance=0.1)
 
         source = random_distributional(dim, initial_variance=0.2, seed=1)
-        edge = Edge(source="a", target="b", edge_type="IS_A", confidence=0.8)
         edge_hdv = random_distributional(dim, seed=2).mean
 
-        # Three hops
-        hop1 = propagate_through_edge(source, edge, edge_hdv, params)
-        hop2 = propagate_through_edge(hop1, edge, edge_hdv, params)
-        hop3 = propagate_through_edge(hop2, edge, edge_hdv, params)
+        # Three hops (edge_variance=0.2 corresponds to uncertainty)
+        hop1 = propagate_through_edge(source, edge_hdv, edge_variance=0.2, params=params)
+        hop2 = propagate_through_edge(hop1, edge_hdv, edge_variance=0.2, params=params)
+        hop3 = propagate_through_edge(hop2, edge_hdv, edge_variance=0.2, params=params)
 
         # Variance strictly increases
         assert hop1.variance.mean() > source.variance.mean()
@@ -128,33 +126,29 @@ class TestInitialVarianceBySource:
 
 
 class TestEdgeConfidenceEffects:
-    """Test that edge confidence affects propagation correctly."""
+    """Test that edge variance affects propagation correctly."""
 
-    def test_high_confidence_edge_preserves_info(self, dim):
-        """High confidence edges should preserve information better."""
+    def test_low_variance_edge_preserves_info(self, dim):
+        """Low variance edges should preserve information better."""
         params = UncertaintyParams(base_edge_variance=0.3)
 
         source = random_distributional(dim, initial_variance=0.2, seed=1)
         edge_hdv = random_distributional(dim, seed=2).mean
 
-        high_conf = Edge(source="a", target="b", edge_type="IS_A", confidence=0.95)
-        low_conf = Edge(source="a", target="b", edge_type="IS_A", confidence=0.3)
+        result_low_var = propagate_through_edge(source, edge_hdv, edge_variance=0.05, params=params)
+        result_high_var = propagate_through_edge(source, edge_hdv, edge_variance=0.7, params=params)
 
-        result_high = propagate_through_edge(source, high_conf, edge_hdv, params)
-        result_low = propagate_through_edge(source, low_conf, edge_hdv, params)
-
-        # High confidence should have lower variance increase
-        assert result_high.variance.mean() < result_low.variance.mean()
+        # Low variance should have lower variance increase
+        assert result_low_var.variance.mean() < result_high_var.variance.mean()
 
     def test_edge_uncertainty_formula(self, dim):
-        """Edge uncertainty contribution should be (1-confidence) * base_edge_variance."""
+        """Edge uncertainty contribution should be edge_variance * base_edge_variance."""
         params = UncertaintyParams(base_edge_variance=0.5)
 
         source = random_distributional(dim, initial_variance=0.2, seed=1)
         edge_hdv = torch.ones(dim)  # No binding effect
-        edge = Edge(source="a", target="b", edge_type="IS_A", confidence=0.6)
 
-        result = propagate_through_edge(source, edge, edge_hdv, params)
+        result = propagate_through_edge(source, edge_hdv, edge_variance=0.4, params=params)
 
         # Expected edge uncertainty contribution: 0.4 * 0.5 = 0.2
         expected_var = source.variance + 0.2
