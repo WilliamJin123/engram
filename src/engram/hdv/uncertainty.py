@@ -299,3 +299,60 @@ def handle_contradiction(
         last_accessed=current_time,
         last_updated=current_time,
     )
+
+
+def bundle_observations(
+    observations: list[tuple[torch.Tensor, torch.Tensor]],
+    current_time: float,
+) -> DistributionalHDV:
+    """Bundle multiple observations into a single distribution.
+
+    Uses Bayesian fusion of independent Gaussians:
+    - Combined precision = sum of individual precisions
+    - Combined mean = precision-weighted average of means
+
+    More observations -> lower variance (more confident).
+    This implements "seeing 10 dogs gives more confident 'dog' concept than 1".
+
+    Args:
+        observations: List of (mean, variance) tuples.
+        current_time: Current timestamp.
+
+    Returns:
+        Fused DistributionalHDV.
+
+    Raises:
+        ValueError: If observations list is empty or dimensions mismatch.
+    """
+    if not observations:
+        raise ValueError("Cannot bundle empty observation list")
+
+    # Check dimensions match
+    dim = observations[0][0].shape[0]
+    for i, (mean, variance) in enumerate(observations):
+        if mean.shape[0] != dim or variance.shape[0] != dim:
+            raise ValueError(
+                f"Observation {i} dimension mismatch: expected {dim}, "
+                f"got mean={mean.shape[0]}, var={variance.shape[0]}"
+            )
+
+    # Compute precisions (1/variance) with numerical stability
+    eps = 1e-10
+    precisions = [1.0 / (var + eps) for _, var in observations]
+
+    # Total precision = sum of precisions
+    total_precision = sum(precisions)
+
+    # Combined variance = 1 / total_precision
+    combined_variance = 1.0 / total_precision
+
+    # Combined mean = precision-weighted average
+    weighted_sum = sum(p * m for (m, _), p in zip(observations, precisions))
+    combined_mean = weighted_sum / total_precision
+
+    return DistributionalHDV(
+        mean=combined_mean,
+        variance=combined_variance,
+        last_accessed=current_time,
+        last_updated=current_time,
+    )

@@ -7,7 +7,7 @@ from engram.hdv.distributional import DistributionalHDV, random_distributional
 from engram.hdv.uncertainty import (
     kl_divergence, symmetric_kl, distributional_similarity,
     bayesian_update, temporal_decay, UncertaintyParams, human_confirm,
-    handle_contradiction
+    handle_contradiction, bundle_observations
 )
 
 
@@ -681,3 +681,104 @@ class TestHandleContradiction:
 
         assert result.last_accessed == 100.0
         assert result.last_updated == 100.0
+
+
+class TestBundleObservations:
+    """Test suite for bundling multiple observations into one distribution."""
+
+    def test_returns_distributional_hdv(self, dim):
+        """Should return a DistributionalHDV."""
+        observations = [
+            (torch.randn(dim), torch.ones(dim) * 0.5),
+            (torch.randn(dim), torch.ones(dim) * 0.5),
+        ]
+        result = bundle_observations(observations, current_time=1.0)
+        assert isinstance(result, DistributionalHDV)
+
+    def test_single_observation_same_as_input(self, dim):
+        """Single observation should return essentially the same distribution."""
+        mean = torch.randn(dim)
+        variance = torch.ones(dim) * 0.3
+        observations = [(mean, variance)]
+
+        result = bundle_observations(observations, current_time=1.0)
+
+        # Mean should be nearly identical (numerical precision)
+        assert torch.allclose(result.mean, mean, atol=1e-6)
+        # Variance should be nearly identical (numerical precision)
+        assert torch.allclose(result.variance, variance, atol=1e-6)
+
+    def test_more_observations_lower_variance(self, dim):
+        """More observations should lead to lower variance (more confidence)."""
+        base_mean = torch.randn(dim)
+        base_variance = torch.ones(dim) * 0.5
+
+        # 2 observations
+        obs_2 = [(base_mean, base_variance), (base_mean, base_variance)]
+        result_2 = bundle_observations(obs_2, current_time=1.0)
+
+        # 5 observations
+        obs_5 = [(base_mean, base_variance) for _ in range(5)]
+        result_5 = bundle_observations(obs_5, current_time=1.0)
+
+        # More observations = lower variance
+        assert result_5.variance.mean() < result_2.variance.mean()
+
+    def test_variance_inversely_proportional_to_count(self, dim):
+        """Combined variance should be ~1/n for n identical observations."""
+        mean = torch.randn(dim)
+        variance = torch.ones(dim) * 0.5
+
+        # 1 observation
+        obs_1 = [(mean, variance)]
+        result_1 = bundle_observations(obs_1, current_time=1.0)
+
+        # 4 observations (should have ~1/4 the variance)
+        obs_4 = [(mean, variance) for _ in range(4)]
+        result_4 = bundle_observations(obs_4, current_time=1.0)
+
+        # Variance ratio should be approximately 4:1
+        variance_ratio = result_1.variance.mean() / result_4.variance.mean()
+        assert variance_ratio == pytest.approx(4.0, rel=0.01)
+
+    def test_mean_is_precision_weighted_average(self, dim):
+        """Combined mean should be precision-weighted average of input means."""
+        # Create two observations with different precisions
+        mean1 = torch.ones(dim)
+        var1 = torch.ones(dim) * 0.25  # Precision = 4
+
+        mean2 = torch.ones(dim) * 3.0
+        var2 = torch.ones(dim) * 1.0  # Precision = 1
+
+        observations = [(mean1, var1), (mean2, var2)]
+        result = bundle_observations(observations, current_time=1.0)
+
+        # Expected mean: (4*1 + 1*3) / (4 + 1) = 7/5 = 1.4
+        expected_mean = torch.ones(dim) * 1.4
+        assert torch.allclose(result.mean, expected_mean, atol=1e-5)
+
+    def test_empty_raises_error(self):
+        """Empty observation list should raise ValueError."""
+        with pytest.raises(ValueError, match="empty"):
+            bundle_observations([], current_time=1.0)
+
+    def test_timestamps_set(self, dim):
+        """Should set both timestamps to current_time."""
+        observations = [
+            (torch.randn(dim), torch.ones(dim) * 0.5),
+        ]
+        result = bundle_observations(observations, current_time=42.0)
+
+        assert result.last_accessed == 42.0
+        assert result.last_updated == 42.0
+
+    def test_dimension_mismatch_raises(self, dim):
+        """Observations with mismatched dimensions should raise ValueError."""
+        mean1 = torch.randn(dim)
+        var1 = torch.ones(dim) * 0.5
+
+        mean2 = torch.randn(dim + 10)  # Different dimension
+        var2 = torch.ones(dim + 10) * 0.5
+
+        with pytest.raises(ValueError, match="mismatch"):
+            bundle_observations([(mean1, var1), (mean2, var2)], current_time=1.0)
