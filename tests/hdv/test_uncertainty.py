@@ -4,7 +4,9 @@ import torch
 import pytest
 import math
 from engram.hdv.distributional import DistributionalHDV, random_distributional
-from engram.hdv.uncertainty import kl_divergence, symmetric_kl
+from engram.hdv.uncertainty import (
+    kl_divergence, symmetric_kl, distributional_similarity
+)
 
 
 class TestKLDivergence:
@@ -124,3 +126,115 @@ class TestSymmetricKL:
 
         skl = symmetric_kl(hdv1, hdv2)
         assert skl == pytest.approx(expected, rel=1e-6)
+
+
+class TestDistributionalSimilarity:
+    """Test suite for hyperbolic KL-based similarity."""
+
+    def test_identical_distributions_similarity_one(self, dim):
+        """Identical distributions should have similarity 1.0."""
+        hdv = random_distributional(dim, seed=42)
+        sim, uncertainty = distributional_similarity(hdv, hdv)
+        assert sim == pytest.approx(1.0, abs=1e-6)
+
+    def test_returns_tuple_of_floats(self, dim):
+        """Should return (similarity, uncertainty) tuple."""
+        hdv1 = random_distributional(dim, seed=1)
+        hdv2 = random_distributional(dim, seed=2)
+        result = distributional_similarity(hdv1, hdv2)
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+        assert isinstance(result[0], float)
+        assert isinstance(result[1], float)
+
+    def test_similarity_bounded_zero_to_one(self, dim):
+        """Similarity should be in range [0, 1]."""
+        for seed in range(10):
+            hdv1 = random_distributional(dim, seed=seed)
+            hdv2 = random_distributional(dim, seed=seed + 100)
+            sim, _ = distributional_similarity(hdv1, hdv2)
+            assert 0.0 <= sim <= 1.0
+
+    def test_similarity_is_symmetric(self, dim):
+        """Similarity should be symmetric."""
+        hdv1 = random_distributional(dim, initial_variance=0.3, seed=1)
+        hdv2 = random_distributional(dim, initial_variance=0.7, seed=2)
+
+        sim_12, _ = distributional_similarity(hdv1, hdv2)
+        sim_21, _ = distributional_similarity(hdv2, hdv1)
+
+        assert sim_12 == pytest.approx(sim_21, rel=1e-6)
+
+    def test_closer_means_higher_similarity(self, dim):
+        """Distributions with closer means should have higher similarity."""
+        base = random_distributional(dim, seed=42)
+
+        # Create distributions at different distances
+        close_mean = base.mean + 0.1 * torch.randn(dim)
+        far_mean = base.mean + 2.0 * torch.randn(dim)
+
+        close = DistributionalHDV(mean=close_mean, variance=base.variance.clone())
+        far = DistributionalHDV(mean=far_mean, variance=base.variance.clone())
+
+        sim_close, _ = distributional_similarity(base, close)
+        sim_far, _ = distributional_similarity(base, far)
+
+        assert sim_close > sim_far
+
+    def test_hyperbolic_formula(self, dim):
+        """Should use hyperbolic formula: 1 / (1 + kl_scale * KL)."""
+        hdv1 = random_distributional(dim, seed=1)
+        hdv2 = random_distributional(dim, seed=2)
+
+        skl = symmetric_kl(hdv1, hdv2)
+        expected_sim = 1.0 / (1.0 + skl)  # default kl_scale=1.0
+
+        sim, _ = distributional_similarity(hdv1, hdv2)
+        assert sim == pytest.approx(expected_sim, rel=1e-6)
+
+    def test_custom_kl_scale(self, dim):
+        """Should respect custom kl_scale parameter."""
+        hdv1 = random_distributional(dim, seed=1)
+        hdv2 = random_distributional(dim, seed=2)
+
+        skl = symmetric_kl(hdv1, hdv2)
+        kl_scale = 2.0
+        expected_sim = 1.0 / (1.0 + kl_scale * skl)
+
+        sim, _ = distributional_similarity(hdv1, hdv2, kl_scale=kl_scale)
+        assert sim == pytest.approx(expected_sim, rel=1e-6)
+
+    def test_uncertainty_higher_with_high_variance(self, dim):
+        """Uncertainty should be higher when distributions have high variance."""
+        low_var = random_distributional(dim, initial_variance=0.1, seed=1)
+        high_var = random_distributional(dim, initial_variance=1.0, seed=1)  # Same mean
+
+        other = random_distributional(dim, initial_variance=0.5, seed=2)
+
+        _, unc_low = distributional_similarity(low_var, other)
+        _, unc_high = distributional_similarity(high_var, other)
+
+        assert unc_high > unc_low
+
+    def test_uncertainty_non_negative(self, dim):
+        """Uncertainty should always be >= 0."""
+        for seed in range(10):
+            hdv1 = random_distributional(dim, seed=seed)
+            hdv2 = random_distributional(dim, seed=seed + 100)
+            _, uncertainty = distributional_similarity(hdv1, hdv2)
+            assert uncertainty >= 0.0
+
+    def test_very_different_distributions_low_similarity(self, dim):
+        """Very different distributions should have low (but positive) similarity."""
+        # Create maximally different distributions
+        mean1 = torch.ones(dim)
+        mean2 = -torch.ones(dim)
+        var = torch.ones(dim) * 0.1  # Low variance = confident they're different
+
+        hdv1 = DistributionalHDV(mean=mean1, variance=var)
+        hdv2 = DistributionalHDV(mean=mean2, variance=var)
+
+        sim, _ = distributional_similarity(hdv1, hdv2)
+
+        # Should be low but positive (hyperbolic never reaches 0)
+        assert 0.0 < sim < 0.1

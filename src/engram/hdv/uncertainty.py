@@ -54,3 +54,45 @@ def symmetric_kl(p: DistributionalHDV, q: DistributionalHDV) -> float:
         Symmetric KL divergence (non-negative float).
     """
     return (kl_divergence(p, q) + kl_divergence(q, p)) / 2
+
+
+def distributional_similarity(
+    a: DistributionalHDV,
+    b: DistributionalHDV,
+    kl_scale: float = 1.0,
+) -> tuple[float, float]:
+    """Compute similarity between distributional HDVs with uncertainty.
+
+    Uses hyperbolic transformation of symmetric KL divergence:
+    similarity = 1 / (1 + kl_scale * KL)
+
+    This preserves weak similarity for distant distributions (never reaches 0),
+    matching the intuition that most concepts have some connection.
+
+    Args:
+        a: First distributional HDV.
+        b: Second distributional HDV.
+        kl_scale: Scaling factor for KL divergence (higher = stricter).
+
+    Returns:
+        Tuple of (similarity, uncertainty):
+        - similarity: Value in (0, 1], where 1 = identical distributions.
+        - uncertainty: Estimate of how uncertain this similarity is.
+    """
+    # Compute symmetric KL divergence
+    skl = symmetric_kl(a, b)
+
+    # Hyperbolic transformation: 1 / (1 + scale * KL)
+    similarity = 1.0 / (1.0 + kl_scale * skl)
+
+    # Uncertainty in the similarity estimate
+    # Higher variance in either distribution = less confident about similarity
+    avg_var_a = a.variance.mean().item()
+    avg_var_b = b.variance.mean().item()
+    combined_var = (avg_var_a + avg_var_b) / 2
+
+    # Scale uncertainty to be interpretable (0 = very confident, 1 = very uncertain)
+    # Use sigmoid-like scaling based on combined variance
+    uncertainty = combined_var / (1.0 + combined_var)
+
+    return similarity, uncertainty
