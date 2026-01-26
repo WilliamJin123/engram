@@ -6,7 +6,8 @@ import math
 from engram.hdv.distributional import DistributionalHDV, random_distributional
 from engram.hdv.uncertainty import (
     kl_divergence, symmetric_kl, distributional_similarity,
-    bayesian_update, temporal_decay, UncertaintyParams, human_confirm
+    bayesian_update, temporal_decay, UncertaintyParams, human_confirm,
+    handle_contradiction
 )
 
 
@@ -582,3 +583,101 @@ class TestHumanConfirm:
 
         # Should be dramatically lower
         assert confirmed.variance.mean() < hdv.variance.mean() * 0.1
+
+
+class TestHandleContradiction:
+    """Test suite for contradiction handling (increases uncertainty)."""
+
+    def test_returns_distributional_hdv(self, dim):
+        """Should return a new DistributionalHDV."""
+        existing = random_distributional(dim, initial_variance=0.3, seed=1)
+        contradicting = torch.randn(dim)
+        params = UncertaintyParams()
+
+        result = handle_contradiction(existing, contradicting, current_time=1.0, params=params)
+        assert isinstance(result, DistributionalHDV)
+
+    def test_variance_increases_on_conflict(self, dim):
+        """Variance should increase when contradicting evidence arrives."""
+        existing = random_distributional(dim, initial_variance=0.3, seed=1)
+        # Create contradicting evidence (opposite sign, large magnitude)
+        contradicting = -existing.mean * 2
+        params = UncertaintyParams(contradiction_scale=0.5)
+
+        result = handle_contradiction(existing, contradicting, current_time=1.0, params=params)
+
+        # Variance should increase
+        assert result.variance.mean() > existing.variance.mean()
+
+    def test_no_conflict_minimal_change(self, dim):
+        """When evidence is similar, variance increase should be minimal."""
+        existing = random_distributional(dim, initial_variance=0.3, seed=1)
+        # Evidence very close to existing mean
+        contradicting = existing.mean + 0.01 * torch.randn(dim)
+        params = UncertaintyParams(contradiction_scale=0.5)
+
+        result = handle_contradiction(existing, contradicting, current_time=1.0, params=params)
+
+        # Variance should increase only minimally
+        variance_increase = result.variance.mean() - existing.variance.mean()
+        assert variance_increase < 0.1  # Small increase
+
+    def test_mean_moves_slightly_toward_contradiction(self, dim):
+        """Mean should shift slightly toward the contradicting evidence."""
+        existing = random_distributional(dim, initial_variance=0.3, seed=1)
+        contradicting = torch.randn(dim) * 2  # Different from existing
+        params = UncertaintyParams()
+
+        result = handle_contradiction(existing, contradicting, current_time=1.0, params=params)
+
+        # Distance to contradicting should decrease
+        dist_before = torch.norm(existing.mean - contradicting)
+        dist_after = torch.norm(result.mean - contradicting)
+        assert dist_after < dist_before
+
+        # But not too much (only 10% blend)
+        # New mean should be closer to existing than to contradicting
+        dist_to_existing = torch.norm(result.mean - existing.mean)
+        assert dist_to_existing < dist_before * 0.2  # Moved less than 20%
+
+    def test_variance_respects_maximum(self, dim):
+        """Variance should not exceed max_variance."""
+        existing = random_distributional(dim, initial_variance=1.5, seed=1)  # High initial
+        contradicting = -existing.mean * 5  # Large contradiction
+        params = UncertaintyParams(
+            contradiction_scale=1.0,  # High scale
+            max_variance=2.0
+        )
+
+        result = handle_contradiction(existing, contradicting, current_time=1.0, params=params)
+
+        assert (result.variance <= params.max_variance + 1e-6).all()
+
+    def test_conflict_strength_affects_variance_increase(self, dim):
+        """Larger conflicts should increase variance more."""
+        existing = random_distributional(dim, initial_variance=0.3, seed=1)
+        params = UncertaintyParams(contradiction_scale=0.5)
+
+        # Small conflict
+        small_contradiction = existing.mean + 0.1
+        result_small = handle_contradiction(existing, small_contradiction, current_time=1.0, params=params)
+
+        # Large conflict
+        large_contradiction = existing.mean + 2.0
+        result_large = handle_contradiction(existing, large_contradiction, current_time=1.0, params=params)
+
+        # Large conflict should increase variance more
+        small_increase = result_small.variance.mean() - existing.variance.mean()
+        large_increase = result_large.variance.mean() - existing.variance.mean()
+        assert large_increase > small_increase
+
+    def test_timestamps_updated(self, dim):
+        """Should update both timestamps to current_time."""
+        existing = random_distributional(dim, initial_variance=0.3, current_time=0.0, seed=1)
+        contradicting = torch.randn(dim)
+        params = UncertaintyParams()
+
+        result = handle_contradiction(existing, contradicting, current_time=100.0, params=params)
+
+        assert result.last_accessed == 100.0
+        assert result.last_updated == 100.0

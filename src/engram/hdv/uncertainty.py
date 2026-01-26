@@ -251,3 +251,51 @@ def human_confirm(
         last_accessed=current_time,
         last_updated=current_time,
     )
+
+
+def handle_contradiction(
+    existing: DistributionalHDV,
+    contradicting: torch.Tensor,
+    current_time: float,
+    params: UncertaintyParams,
+) -> DistributionalHDV:
+    """Handle contradictory evidence by increasing uncertainty.
+
+    When new evidence contradicts existing beliefs, we:
+    1. Increase variance in conflicting dimensions (we're less sure now)
+    2. Shift mean slightly toward the new evidence (hedge our bets)
+
+    This is different from Bayesian update which assumes evidence is correct.
+    Contradiction handling acknowledges we don't know which is right.
+
+    Args:
+        existing: Current belief distribution.
+        contradicting: The contradicting evidence (HDV).
+        current_time: Current timestamp.
+        params: Uncertainty parameters.
+
+    Returns:
+        New DistributionalHDV with increased uncertainty.
+    """
+    # Compute conflict strength per dimension
+    # High conflict where signs differ and magnitudes are large
+    conflict_strength = torch.abs(existing.mean - contradicting)
+
+    # Increase variance proportionally to conflict
+    variance_increase = conflict_strength * params.contradiction_scale
+    new_variance = existing.variance + variance_increase
+
+    # Clamp to bounds
+    new_variance = torch.clamp(new_variance, min=params.min_variance, max=params.max_variance)
+
+    # Shift mean slightly toward contradiction (10% blend)
+    # We don't know which is right, so we hedge
+    blend_factor = 0.1
+    new_mean = (1 - blend_factor) * existing.mean + blend_factor * contradicting
+
+    return DistributionalHDV(
+        mean=new_mean,
+        variance=new_variance,
+        last_accessed=current_time,
+        last_updated=current_time,
+    )
