@@ -4,7 +4,7 @@ A memory system using distributional High-Dimensional Vectors (HDVs)
 for principled uncertainty tracking in knowledge graphs.
 """
 
-__version__ = "0.3.0"  # Bump for node-centric architecture
+__version__ = "0.4.0"  # Bump for architecture implementation
 
 from .hdv import (
     DistributionalHDV,
@@ -14,13 +14,17 @@ from .hdv import (
     distributional_unbind,
     distributional_similarity,
     bayesian_update,
+    bayesian_update_with_mass,
     temporal_decay,
     human_confirm,
     handle_contradiction,
     bundle_observations,
     propagate_through_edge,
 )
-from .graph import Edge, Node
+from .graph import Edge, Node, KnowledgeGraph
+from .sleep import Clusterer, Abstractor, ContradictionDetector
+from .drive import CuriosityDrive
+from .strategy import create_strategy_node, is_strategy_node, StrategyMatcher
 
 __all__ = [
     # Version
@@ -30,6 +34,7 @@ __all__ = [
     "UncertaintyParams",
     "Edge",
     "Node",
+    "KnowledgeGraph",
     # Factory
     "random_distributional",
     # Operations
@@ -38,9 +43,20 @@ __all__ = [
     "distributional_similarity",
     # Uncertainty management
     "bayesian_update",
+    "bayesian_update_with_mass",
     "temporal_decay",
     "human_confirm",
     "handle_contradiction",
     "bundle_observations",
     "propagate_through_edge",
+    # Sleep agents (hardcoded)
+    "Clusterer",
+    "Abstractor",
+    "ContradictionDetector",
+    # Drives (hardcoded)
+    "CuriosityDrive",
+    # Strategies (emergent)
+    "create_strategy_node",
+    "is_strategy_node",
+    "StrategyMatcher",
 ]
