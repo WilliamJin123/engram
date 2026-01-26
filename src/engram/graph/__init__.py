@@ -2,5 +2,6 @@
 
 from .edge import Edge
 from .node import Node
+from .knowledge_graph import KnowledgeGraph
 
-__all__ = ["Edge", "Node"]
+__all__ = ["Edge", "Node", "KnowledgeGraph"]
