@@ -3,7 +3,6 @@
 import pytest
 import torch
 
-# Use consistent seed for reproducibility
 SEED = 42
 
 
@@ -21,5 +20,5 @@ def dim():
 
 @pytest.fixture
 def sparsity():
-    """Default sparsity (fraction of active dimensions)."""
-    return 0.01  # 1% = ~10 active bits in 1024-dim
+    """Default sparsity (number of active dimensions)."""
+    return 50  # k=50 active of dim=1024
