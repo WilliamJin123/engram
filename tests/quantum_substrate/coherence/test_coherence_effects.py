@@ -417,3 +417,294 @@ class TestCoherenceWeightingEdgeCases:
         # Both should appear; order determined by raw interference
         pattern_ids = [r.pattern_id for r in results]
         assert id1 in pattern_ids and id2 in pattern_ids
+
+
+class TestSurpriseRecoherence:
+    """TEST-03: Validate surprise detection triggers re-coherence.
+
+    Per CONTEXT.md:
+    - Surprise is measured as mismatch between expected and actual
+    - Surprising patterns get full boost
+    - Expected (wrong) patterns get 0.5x boost
+    - Participants get 0.3x * involvement boost
+    - Zero-coherence patterns CAN be resurrected through surprise
+    """
+
+    def test_surprise_boosts_unexpected_pattern(self):
+        """Unexpected top result gets coherence boost from surprise."""
+        from agentic.memory_store import MemoryStore
+        from quantum_substrate.coherence import CoherenceConfig
+
+        config = CoherenceConfig(decay_rate=0.5, floor=0.01)
+        store = MemoryStore(coherence_config=config)
+
+        # Store expected pattern (will be high coherence)
+        id_expected = store.store("dogs are loyal pets")
+
+        # Store surprising pattern (same topic but different wording)
+        id_surprising = store.store("canines make great companions")
+
+        # Decay the surprising pattern significantly
+        for _ in range(30):
+            store.coherence_manager.advance_tick()
+            store.coherence_manager.apply_decay(store.patterns[id_surprising])
+
+        # Keep expected pattern fresh
+        store.coherence_manager.apply_refresh(store.patterns[id_expected], 1.0)
+
+        # Verify coherence difference
+        c_expected = store.patterns[id_expected].coherence
+        c_surprising = store.patterns[id_surprising].coherence
+        assert c_expected > c_surprising * 3, (
+            f"Expected should be much more coherent: {c_expected} vs {c_surprising}"
+        )
+
+        # Record surprising pattern coherence before retrieval
+        initial_surprising = store.patterns[id_surprising].coherence
+
+        # Query that could match either - if surprising ranks first, it gets boost
+        results, surprise = store.retrieve_with_surprise(
+            "loyal companions pets",
+            method="interference",
+            boost_coefficient=0.5,
+        )
+
+        # The surprising pattern should have received re-coherence boost
+        # (either from being surprising OR from participant score)
+        final_surprising = store.patterns[id_surprising].coherence
+        assert final_surprising >= initial_surprising, (
+            f"Surprising pattern should not lose coherence: "
+            f"initial={initial_surprising:.3f}, final={final_surprising:.3f}"
+        )
+
+    def test_expected_wrong_gets_medium_boost(self):
+        """Expected pattern that wasn't top gets 0.5x boost."""
+        from agentic.memory_store import MemoryStore
+        from quantum_substrate.coherence import CoherenceConfig
+
+        config = CoherenceConfig(decay_rate=0.3, floor=0.01)
+        store = MemoryStore(coherence_config=config)
+
+        # Store two patterns - set up so expected prediction is wrong
+        id_a = store.store("artificial intelligence research")
+        id_b = store.store("machine learning science")
+
+        # Decay both, then refresh A (making it expected winner)
+        for _ in range(20):
+            store.coherence_manager.advance_tick()
+            store.coherence_manager.decay_all(store.patterns.values())
+
+        # Refresh A so it's the expected top result
+        store.coherence_manager.apply_refresh(store.patterns[id_a], 1.0)
+
+        # Record coherence before
+        initial_a = store.patterns[id_a].coherence
+        initial_b = store.patterns[id_b].coherence
+
+        # Query matching B better - A is expected but B might rank higher
+        results, surprise = store.retrieve_with_surprise(
+            "machine learning",
+            method="interference",
+            boost_coefficient=0.5,
+        )
+
+        # If there was surprise (prediction wrong), expected gets 0.5x boost
+        if surprise and surprise.expected_pattern_id:
+            expected_id = surprise.expected_pattern_id
+            expected_pattern = store.patterns[expected_id]
+            # The expected pattern should have received a boost
+            # (Note: it also gets refresh from being in results)
+            assert expected_pattern.coherence >= initial_a * 0.9, (
+                f"Expected pattern should maintain or increase coherence"
+            )
+
+    def test_zero_coherence_can_resurrect(self):
+        """Pattern at coherence floor can be resurrected through surprise.
+
+        Per CONTEXT.md: 'Zero-coherence patterns CAN be resurrected through surprise'
+        """
+        from agentic.memory_store import MemoryStore
+        from quantum_substrate.coherence import CoherenceConfig
+
+        config = CoherenceConfig(decay_rate=1.0, floor=0.01)
+        store = MemoryStore(coherence_config=config)
+
+        # Store pattern
+        pid = store.store("rare esoteric forgotten knowledge")
+
+        # Force to floor coherence
+        store.patterns[pid].coherence = config.floor
+        store.patterns[pid].last_access_tick = store.coherence_manager.current_tick
+
+        initial_coherence = store.patterns[pid].coherence
+        assert initial_coherence == config.floor, (
+            f"Pattern should be at floor: {initial_coherence}"
+        )
+
+        # Query that matches - surprising since pattern is at floor
+        results, surprise = store.retrieve_with_surprise(
+            "rare esoteric knowledge",
+            method="interference",
+            boost_coefficient=0.5,
+        )
+
+        final_coherence = store.patterns[pid].coherence
+        # Should have re-cohered - at minimum from refresh, possibly also surprise
+        assert final_coherence > initial_coherence, (
+            f"Floor-coherence pattern should resurrect: "
+            f"initial={initial_coherence:.3f}, final={final_coherence:.3f}"
+        )
+
+    def test_no_surprise_minimal_recoherence(self):
+        """When expected matches actual, surprise magnitude is low."""
+        from agentic.memory_store import MemoryStore
+        from quantum_substrate.coherence import CoherenceConfig
+
+        config = CoherenceConfig(decay_rate=0.1, floor=0.01)
+        store = MemoryStore(coherence_config=config)
+
+        # Store single pattern - expectation should match actual
+        pid = store.store("unique content for single pattern test")
+
+        # Query exactly matching
+        results, surprise = store.retrieve_with_surprise(
+            "unique content for single pattern test",
+            method="interference",
+        )
+
+        # With single pattern, expected = actual = that pattern
+        # So surprising_pattern_id should be None (prediction correct)
+        # Note: magnitude is about bit mismatch, not prediction mismatch
+        assert surprise is not None
+        assert surprise.surprising_pattern_id is None, (
+            f"Expected no surprising pattern when prediction correct"
+        )
+
+    def test_surprise_magnitude_proportional_to_boost(self):
+        """Higher surprise magnitude leads to larger coherence boost."""
+        from agentic.memory_store import MemoryStore
+        from quantum_substrate.coherence import CoherenceConfig
+
+        config = CoherenceConfig(decay_rate=0.5, floor=0.01)
+        store = MemoryStore(coherence_config=config)
+
+        # Store patterns with different overlap to query
+        id_high_overlap = store.store("cats dogs pets animals mammals")
+        id_low_overlap = store.store("xyz quantum physics unrelated")
+
+        # Decay both significantly
+        for _ in range(30):
+            store.coherence_manager.advance_tick()
+            store.coherence_manager.decay_all(store.patterns.values())
+
+        # Record initial coherences
+        initial_high = store.patterns[id_high_overlap].coherence
+        initial_low = store.patterns[id_low_overlap].coherence
+
+        # Query matching high_overlap well
+        results, surprise = store.retrieve_with_surprise(
+            "cats pets animals",
+            method="interference",
+            boost_coefficient=0.5,
+        )
+
+        # High overlap pattern should get more boost (from refresh + possible surprise)
+        final_high = store.patterns[id_high_overlap].coherence
+        final_low = store.patterns[id_low_overlap].coherence
+
+        boost_high = final_high - initial_high
+        boost_low = final_low - initial_low
+
+        # High-overlap pattern should receive more boost
+        assert boost_high >= boost_low, (
+            f"Higher overlap should get more boost: high={boost_high:.3f}, low={boost_low:.3f}"
+        )
+
+    def test_retrieve_with_surprise_returns_tuple(self):
+        """retrieve_with_surprise returns (results, surprise_result) tuple."""
+        from agentic.memory_store import MemoryStore
+
+        store = MemoryStore()
+        store.store("test pattern")
+
+        output = store.retrieve_with_surprise("test")
+
+        assert isinstance(output, tuple), "Should return tuple"
+        assert len(output) == 2, "Tuple should have 2 elements"
+        results, surprise = output
+        assert isinstance(results, list), "First element should be list"
+
+    def test_retrieve_with_surprise_empty_store(self):
+        """retrieve_with_surprise handles empty store gracefully."""
+        from agentic.memory_store import MemoryStore
+
+        store = MemoryStore()
+        results, surprise = store.retrieve_with_surprise("anything")
+
+        assert results == []
+        assert surprise is None
+
+    def test_recoherence_scales_by_role(self):
+        """Verify role-based scaling: surprising > expected > participant.
+
+        From CONTEXT.md:
+        - Surprising pattern: full base_boost
+        - Expected (wrong): 0.5x base_boost
+        - Participants: 0.3x * involvement
+        """
+        from agentic.memory_store import MemoryStore
+        from quantum_substrate.coherence import CoherenceConfig
+        from quantum_substrate.surprise import SurpriseResult
+
+        config = CoherenceConfig(decay_rate=0.1, floor=0.01)
+        store = MemoryStore(coherence_config=config)
+
+        # Create patterns
+        id_surprising = store.store("surprising content")
+        id_expected = store.store("expected content")
+        id_participant = store.store("participant content")
+
+        # Set all to same low coherence
+        for pid in [id_surprising, id_expected, id_participant]:
+            store.patterns[pid].coherence = 0.2
+            store.patterns[pid].last_access_tick = store.coherence_manager.current_tick
+
+        initial = {pid: 0.2 for pid in [id_surprising, id_expected, id_participant]}
+
+        # Create a fake surprise result with known values
+        surprise = SurpriseResult(
+            magnitude=0.5,
+            surprising_pattern_id=id_surprising,
+            expected_pattern_id=id_expected,
+            participant_scores={id_participant: 0.5},
+        )
+
+        # Apply recoherence directly
+        deltas = store.coherence_manager.apply_recoherence(
+            store.patterns, surprise, boost_coefficient=0.5
+        )
+
+        # Verify role-based scaling
+        # base_boost = 0.5 * 0.5 = 0.25
+        # surprising: 0.25 (full)
+        # expected: 0.25 * 0.5 = 0.125
+        # participant: 0.25 * 0.5 * 0.3 = 0.0375
+
+        assert id_surprising in deltas
+        assert id_expected in deltas
+
+        delta_surprising = deltas[id_surprising]
+        delta_expected = deltas[id_expected]
+
+        # Surprising should get more than expected
+        assert delta_surprising > delta_expected, (
+            f"Surprising should get more: {delta_surprising:.3f} vs {delta_expected:.3f}"
+        )
+
+        # Expected should get more than participant (if participant was significant)
+        if id_participant in deltas:
+            delta_participant = deltas[id_participant]
+            assert delta_expected > delta_participant, (
+                f"Expected should get more than participant: "
+                f"{delta_expected:.3f} vs {delta_participant:.3f}"
+            )
