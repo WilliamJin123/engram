@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Sequence
 
 if TYPE_CHECKING:
     from agentic.evolving_pattern import EvolvingPattern
+    from quantum_substrate.surprise import SurpriseResult
 
 
 @dataclass
@@ -149,3 +150,74 @@ class CoherenceManager:
     def reset(self) -> None:
         """Reset tick counter to 0. Useful for testing."""
         self._current_tick = 0
+
+    def apply_recoherence(
+        self,
+        patterns: dict[str, "EvolvingPattern"],
+        surprise: "SurpriseResult",
+        boost_coefficient: float = 0.5,
+    ) -> dict[str, float]:
+        """Apply re-coherence based on surprise result.
+
+        Surprise triggers re-coherence of involved patterns, allowing decayed
+        or even zero-coherence patterns to be resurrected through unexpected
+        retrieval results.
+
+        Scaling per CONTEXT.md:
+        - Surprising pattern (unexpected result): full proportional boost
+        - Wrong prediction (expected that was wrong): medium boost (0.5x)
+        - Other participants: boost scaled by contribution strength (0.3x multiplier)
+
+        All boosts are additive and capped at 1.0 coherence.
+
+        Args:
+            patterns: All patterns by ID.
+            surprise: Detection result from SurpriseDetector.
+            boost_coefficient: Convert surprise magnitude to coherence boost.
+                Default 0.5 means magnitude=1.0 gives base_boost=0.5.
+
+        Returns:
+            Dict of pattern_id -> coherence delta applied.
+            Useful for observability and testing.
+        """
+        # Skip if no meaningful surprise
+        if surprise.magnitude < 0.001:
+            return {}
+
+        base_boost = surprise.magnitude * boost_coefficient
+        deltas: dict[str, float] = {}
+
+        # 1. Surprising pattern gets full boost
+        if surprise.surprising_pattern_id and surprise.surprising_pattern_id in patterns:
+            pattern = patterns[surprise.surprising_pattern_id]
+            headroom = self.config.refresh_cap - pattern.coherence
+            delta = min(base_boost, headroom)
+            pattern.coherence += delta
+            deltas[surprise.surprising_pattern_id] = delta
+
+        # 2. Expected (wrong prediction) gets 0.5x boost
+        if surprise.expected_pattern_id and surprise.expected_pattern_id in patterns:
+            pattern = patterns[surprise.expected_pattern_id]
+            headroom = self.config.refresh_cap - pattern.coherence
+            delta = min(base_boost * 0.5, headroom)
+            pattern.coherence += delta
+            deltas[surprise.expected_pattern_id] = delta
+
+        # 3. Other participants get 0.3x * involvement
+        for pattern_id, involvement in surprise.participant_scores.items():
+            # Skip if already handled above
+            if pattern_id in deltas:
+                continue
+            if pattern_id not in patterns:
+                continue
+
+            pattern = patterns[pattern_id]
+            headroom = self.config.refresh_cap - pattern.coherence
+            delta = min(base_boost * involvement * 0.3, headroom)
+
+            # Only record if delta is meaningful
+            if delta > 0.0001:
+                pattern.coherence += delta
+                deltas[pattern_id] = delta
+
+        return deltas
