@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-31)
 ## Current Position
 
 Phase: 2 of 5 (Coherence Effects)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-01 — Completed 02-01-PLAN.md (Coherence-Weighted Retrieval)
+Last activity: 2026-02-01 — Completed 02-02-PLAN.md (Surprise Detection)
 
-Progress: [####░░░░░░] 31% (4/13 plans complete)
+Progress: [#####░░░░░] 38% (5/13 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: 9 min
-- Total execution time: 26 min
+- Total execution time: 36 min
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [####░░░░░░] 31% (4/13 plans complete)
 |-------|-------|-------|----------|
 | 0. Documentation | 1 | - | - |
 | 1. Coherence Foundation | 2 | 17 min | 9 min |
-| 2. Coherence Effects | 1 | 9 min | 9 min |
+| 2. Coherence Effects | 2 | 19 min | 10 min |
 
 **Recent Trend:**
-- Last 5 plans: [init, 01-01, 01-02, 02-01]
+- Last 5 plans: [init, 01-01, 01-02, 02-01, 02-02]
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -54,6 +54,9 @@ Recent decisions affecting current work:
 - [01-02]: connection_count increments even when no bits transfer
 - [02-01]: Coherence weighting uses weight = coherence^exponent (default exponent=1.0)
 - [02-01]: No hard cutoffs - floor-coherence patterns still contribute proportionally
+- [02-02]: Surprise magnitude = normalized Hamming distance (symmetric_diff / union)
+- [02-02]: Re-coherence scaling: surprising=1.0x, expected=0.5x, participants=0.3x*involvement
+- [02-02]: Minimum surprise threshold 0.001 to skip trivial updates
 
 ### Pending Todos
 
@@ -69,7 +72,7 @@ From CONCERNS.md analysis:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 02-01-PLAN.md (Coherence-Weighted Retrieval)
+Stopped at: Completed 02-02-PLAN.md (Surprise Detection)
 Resume file: None
 
 ---
