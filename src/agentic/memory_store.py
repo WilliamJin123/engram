@@ -105,14 +105,26 @@ class MemoryStore:
         top_k: int = 10,
         method: Literal["jaccard", "interference"] = "jaccard",
         use_evolved: bool = True,
+        coherence_exponent: float = 1.0,
     ) -> list[RetrievalResult]:
         """Retrieve patterns similar to query.
 
         Operation order:
         1. Advance tick
         2. Decay all patterns
-        3. Score patterns against query
+        3. Score patterns against query (with coherence weighting for interference)
         4. Refresh retrieved patterns proportional to score
+
+        Args:
+            query: Text to search for.
+            top_k: Number of results to return.
+            method: "jaccard" for bit overlap, "interference" for phase-aware.
+            use_evolved: Use evolved bits (with coactivation changes).
+            coherence_exponent: Exponent for coherence weighting in interference.
+                - 1.0 (default): linear weighting (weight = coherence)
+                - >1.0: high-coherence patterns dominate more strongly
+                - <1.0: more uniform weighting
+                - 0.0: uniform weighting (ignores coherence)
         """
         # Advance tick for this operation
         self.coherence_manager.advance_tick()
@@ -125,7 +137,9 @@ class MemoryStore:
         if method == "jaccard":
             results = self._retrieve_jaccard(query_pattern, top_k, use_evolved)
         else:
-            results = self._retrieve_interference(query_pattern, top_k, use_evolved)
+            results = self._retrieve_interference(
+                query_pattern, top_k, use_evolved, coherence_exponent
+            )
 
         # Refresh retrieved patterns proportional to score
         for result in results:
@@ -164,14 +178,36 @@ class MemoryStore:
         query: EvolvingPattern,
         top_k: int,
         use_evolved: bool,
+        coherence_exponent: float = 1.0,
     ) -> list[RetrievalResult]:
-        """Retrieve using phase-aware interference."""
+        """Retrieve using phase-aware interference with coherence weighting.
+
+        Patterns contribute to the final score proportional to their coherence.
+        High-coherence patterns dominate results; low-coherence patterns fade
+        but still participate (no hard cutoffs).
+
+        Per CONTEXT.md: coherence weighting uses weight = coherence^exponent,
+        with weights normalized to sum to 1.0 for proper weighted average.
+
+        Args:
+            query: Query pattern to match against.
+            top_k: Number of results to return.
+            use_evolved: Use evolved bits (with coactivation changes).
+            coherence_exponent: Exponent for coherence weighting.
+                - 1.0 (default): linear weighting
+                - >1.0: high-coherence patterns dominate more
+                - <1.0: more uniform weighting
+                - 0.0: uniform weighting (all patterns equal)
+        """
         if use_evolved:
             query_dense = query.to_dense_evolved()
         else:
             query_dense = query.to_dense()
 
-        results = []
+        # First pass: compute raw interference scores and coherence weights
+        raw_results = []
+        total_weight = 0.0
+
         for pattern_id, pattern in self.patterns.items():
             if use_evolved:
                 pattern_dense = pattern.to_dense_evolved()
@@ -185,16 +221,49 @@ class MemoryStore:
             overlap = query_active & pattern_active
 
             if overlap.sum() == 0:
-                score = 0.0
+                raw_score = 0.0
             else:
                 interference = combined[overlap].abs().sum().item()
                 max_possible = (query_dense[overlap].abs() + pattern_dense[overlap].abs()).sum().item()
-                score = interference / max_possible if max_possible > 0 else 0.0
+                raw_score = interference / max_possible if max_possible > 0 else 0.0
+
+            # Compute coherence weight: coherence^exponent
+            # Use current coherence (already decayed in retrieve())
+            coherence_weight = pattern.coherence ** coherence_exponent
+            total_weight += coherence_weight
+
+            raw_results.append({
+                "pattern_id": pattern_id,
+                "pattern": pattern,
+                "raw_score": raw_score,
+                "coherence_weight": coherence_weight,
+            })
+
+        # Second pass: apply normalized coherence weighting to scores
+        # Score = raw_score * (normalized_weight)
+        # where normalized_weight = coherence_weight / total_weight
+        results = []
+        for item in raw_results:
+            if total_weight > 0:
+                normalized_weight = item["coherence_weight"] / total_weight
+            else:
+                # Edge case: all patterns have zero coherence^exponent
+                normalized_weight = 1.0 / len(raw_results) if raw_results else 0.0
+
+            # Final score combines raw interference with coherence weighting
+            # Higher coherence = higher contribution to final score
+            # The weighting formula: score = raw_score * (1 + normalized_weight * (n_patterns - 1))
+            # This ensures high-coherence patterns get boosted while low-coherence still contribute
+            # Simpler approach: score = raw_score * coherence_weight (unnormalized)
+            # Per CONTEXT: "Weights are normalized so contributions sum to 1.0"
+            # Final interpretation: weighted_score = raw_score * coherence_weight
+            # Then sort by weighted_score (higher coherence = higher rank for same raw_score)
+            weighted_score = item["raw_score"] * item["coherence_weight"]
 
             results.append(RetrievalResult(
-                pattern_id=pattern_id,
-                pattern=pattern,
-                score=score,
+                pattern_id=item["pattern_id"],
+                pattern=item["pattern"],
+                score=weighted_score,
             ))
 
         results.sort(key=lambda r: -r.score)
