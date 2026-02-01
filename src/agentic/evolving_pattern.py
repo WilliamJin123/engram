@@ -31,6 +31,9 @@ class EvolvingPattern:
         text: Source text that was encoded.
         metadata: Arbitrary metadata (speaker, time, topic, etc).
         acquisition_count: Number of coactivation events.
+        coherence: Current coherence value (0-1). New patterns start at 1.0.
+        last_access_tick: Global tick when pattern was last accessed.
+        connection_count: Number of bindings/coactivations (for embeddedness).
     """
 
     dim: int
@@ -41,6 +44,9 @@ class EvolvingPattern:
     text: str
     metadata: dict[str, Any] = field(default_factory=dict)
     acquisition_count: int = 0
+    coherence: float = 1.0
+    last_access_tick: int = 0
+    connection_count: int = 0
 
     @classmethod
     def from_encoded(cls, encoded: "EncodedPattern") -> EvolvingPattern:
@@ -54,6 +60,9 @@ class EvolvingPattern:
             text=encoded.text,
             metadata=dict(encoded.metadata),
             acquisition_count=0,
+            coherence=1.0,
+            last_access_tick=0,
+            connection_count=0,
         )
 
     @classmethod
@@ -111,3 +120,16 @@ class EvolvingPattern:
         if not self.bits:
             return 0.0
         return len(self.acquired_bits) / len(self.bits)
+
+    @property
+    def embeddedness(self) -> float:
+        """Structural embeddedness based on connection count.
+
+        Higher embeddedness = slower decay. Scale factor 0.1 means
+        10 connections halves the effective decay rate.
+        """
+        return 1.0 + 0.1 * self.connection_count
+
+    def clamp_coherence(self, floor: float = 0.01) -> None:
+        """Ensure coherence stays within valid bounds."""
+        self.coherence = max(floor, min(1.0, self.coherence))
