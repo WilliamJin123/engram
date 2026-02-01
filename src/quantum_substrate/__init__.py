@@ -7,6 +7,7 @@ from quantum_substrate.interference import (
     interference_retrieval,
     create_related_pattern,
 )
+from quantum_substrate.coherence import CoherenceManager, CoherenceConfig
 
 __version__ = "0.1.0"
 __all__ = [
@@ -17,4 +18,6 @@ __all__ = [
     "jaccard_retrieval",
     "interference_retrieval",
     "create_related_pattern",
+    "CoherenceManager",
+    "CoherenceConfig",
 ]
