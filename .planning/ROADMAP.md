@@ -43,11 +43,11 @@ Plans:
   3. Accessing a pattern (via retrieve or explicit access) increases its coherence
   4. Tests mathematically validate decay follows spec: coherence *= exp(-decay_rate * dt)
   5. Tests validate refresh mechanism restores coherence without exceeding 1.0
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: Add coherence field to pattern data structures
-- [ ] 01-02: Implement decay and refresh mechanics with tests
+- [ ] 01-01-PLAN.md — Add coherence field to EvolvingPattern and create CoherenceManager
+- [ ] 01-02-PLAN.md — Wire CoherenceManager into operations and validate with tests
 
 ### Phase 2: Coherence Effects
 **Goal**: Coherence modulates interference and surprise re-coheres decayed patterns
@@ -133,7 +133,7 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Documentation | 1/1 | Complete | 2026-01-31 |
-| 1. Coherence Foundation | 0/2 | Not started | - |
+| 1. Coherence Foundation | 0/2 | Ready for execution | - |
 | 2. Coherence Effects | 0/3 | Not started | - |
 | 3. Advanced Dynamics | 0/3 | Not started | - |
 | 4. Codebase Cleanup | 0/2 | Not started | - |
@@ -141,3 +141,4 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 
 ---
 *Roadmap created: 2026-01-31*
+*Phase 1 planned: 2026-02-01*
