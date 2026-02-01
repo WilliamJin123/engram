@@ -8,6 +8,11 @@ from quantum_substrate.interference import (
     create_related_pattern,
 )
 from quantum_substrate.coherence import CoherenceManager, CoherenceConfig
+from quantum_substrate.surprise import (
+    SurpriseDetector,
+    SurpriseResult,
+    compute_surprise_magnitude,
+)
 
 __version__ = "0.1.0"
 __all__ = [
@@ -20,4 +25,7 @@ __all__ = [
     "create_related_pattern",
     "CoherenceManager",
     "CoherenceConfig",
+    "SurpriseDetector",
+    "SurpriseResult",
+    "compute_surprise_magnitude",
 ]
