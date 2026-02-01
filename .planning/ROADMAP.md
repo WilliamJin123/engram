@@ -59,12 +59,12 @@ Plans:
   3. When a pattern experiences contradiction/surprise, its coherence increases significantly
   4. Tests demonstrate coherence-weighted interference produces better retrieval than uniform weighting
   5. Tests validate that surprise detection triggers re-coherence on specific patterns
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Implement coherence-weighted interference retrieval
-- [ ] 02-02: Implement surprise detection and re-coherence mechanism
-- [ ] 02-03: Tests for coherence effects on retrieval quality
+- [ ] 02-01-PLAN.md — Coherence-weighted interference retrieval (COHR-05, TEST-04)
+- [ ] 02-02-PLAN.md — Surprise detection module and re-coherence method (COHR-04 foundation)
+- [ ] 02-03-PLAN.md — Surprise integration and re-coherence tests (COHR-04, TEST-03)
 
 ### Phase 3: Advanced Dynamics
 **Goal**: High-coherence patterns can tunnel to weakly-related patterns; system has criticality tuning
@@ -134,7 +134,7 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 |-------|----------------|--------|-----------|
 | 0. Documentation | 1/1 | Complete | 2026-01-31 |
 | 1. Coherence Foundation | 2/2 | Complete | 2026-02-01 |
-| 2. Coherence Effects | 0/3 | Not started | - |
+| 2. Coherence Effects | 0/3 | Planned | - |
 | 3. Advanced Dynamics | 0/3 | Not started | - |
 | 4. Codebase Cleanup | 0/2 | Not started | - |
 | 5. Architecture Clarity | 0/3 | Not started | - |
@@ -143,3 +143,4 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 *Roadmap created: 2026-01-31*
 *Phase 1 planned: 2026-02-01*
 *Phase 1 completed: 2026-02-01*
+*Phase 2 planned: 2026-02-01*
