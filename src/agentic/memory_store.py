@@ -15,6 +15,7 @@ import torch
 
 from agentic.evolving_pattern import EvolvingPattern
 from quantum_substrate.coherence import CoherenceManager, CoherenceConfig
+from quantum_substrate.surprise import SurpriseDetector, SurpriseResult
 
 
 @dataclass
@@ -293,3 +294,89 @@ class MemoryStore:
     def get_all_patterns(self) -> list[EvolvingPattern]:
         """Get all patterns for analysis."""
         return list(self.patterns.values())
+
+    def retrieve_with_surprise(
+        self,
+        query: str,
+        top_k: int = 10,
+        method: Literal["jaccard", "interference"] = "interference",
+        use_evolved: bool = True,
+        coherence_exponent: float = 1.0,
+        boost_coefficient: float = 0.5,
+    ) -> tuple[list[RetrievalResult], SurpriseResult | None]:
+        """Retrieve with automatic surprise detection and re-coherence.
+
+        This is the full coherence-aware retrieval flow:
+        1. Advance tick, decay all patterns
+        2. Build expectation (which patterns we expect to match)
+        3. Retrieve using coherence-weighted method
+        4. Detect surprise (expected vs actual mismatch)
+        5. Apply re-coherence to involved patterns
+        6. Apply normal refresh to retrieved patterns
+
+        Args:
+            query: Query text.
+            top_k: Number of results.
+            method: Retrieval method ("interference" recommended for coherence effects).
+            use_evolved: Use evolved bits (with acquired).
+            coherence_exponent: Power for coherence weighting.
+            boost_coefficient: Surprise-to-coherence conversion factor.
+
+        Returns:
+            Tuple of (results, surprise_result). surprise_result is None if no patterns.
+        """
+        # Step 1: Advance tick for this operation
+        self.coherence_manager.advance_tick()
+
+        # Step 2: Decay all patterns first
+        self.coherence_manager.decay_all(self.patterns.values())
+
+        # Handle empty store
+        if not self.patterns:
+            return [], None
+
+        # Step 3: Create query pattern from text
+        query_pattern = EvolvingPattern.from_text(query, dim=self.dim, k=self.k)
+        query_bits = query_pattern.bits if use_evolved else set(query_pattern.original_bits)
+
+        # Step 4: Build expectation using SurpriseDetector
+        detector = SurpriseDetector()
+        expected_bits, expected_weights = detector.build_expectation(
+            query_bits, self.patterns, self.coherence_manager
+        )
+
+        # Step 5: Retrieve using appropriate method
+        if method == "jaccard":
+            results = self._retrieve_jaccard(query_pattern, top_k, use_evolved)
+        else:
+            results = self._retrieve_interference(
+                query_pattern, top_k, use_evolved, coherence_exponent
+            )
+
+        # Handle no results
+        if not results:
+            return results, None
+
+        # Step 6: Detect surprise comparing expected to actual top result
+        actual_pattern = results[0].pattern
+        actual_pattern_id = results[0].pattern_id
+        retrieval_scores = [(r.pattern_id, r.score) for r in results]
+
+        surprise_result = detector.detect(
+            expected_bits,
+            expected_weights,
+            actual_pattern,
+            actual_pattern_id,
+            retrieval_scores,
+        )
+
+        # Step 7: Apply re-coherence based on surprise
+        self.coherence_manager.apply_recoherence(
+            self.patterns, surprise_result, boost_coefficient
+        )
+
+        # Step 8: Apply normal refresh to all retrieved patterns (same as retrieve())
+        for result in results:
+            self.coherence_manager.apply_refresh(result.pattern, activation_strength=result.score)
+
+        return results, surprise_result
