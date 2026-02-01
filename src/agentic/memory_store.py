@@ -14,6 +14,7 @@ from typing import Any, Literal
 import torch
 
 from agentic.evolving_pattern import EvolvingPattern
+from quantum_substrate.coherence import CoherenceManager, CoherenceConfig
 
 
 @dataclass
@@ -38,12 +39,23 @@ class MemoryStore:
 
     This is the substrate layer - it handles pattern storage and retrieval.
     LLM reranking should be done externally (see docs/KEYCYCLE.md).
+
+    Integrates CoherenceManager for decay/refresh on operations:
+    - Each store/retrieve advances the global tick
+    - All patterns decay at start of each operation
+    - Accessed patterns refresh proportional to activation strength
     """
 
-    def __init__(self, dim: int = 1024, k: int = 50):
+    def __init__(
+        self,
+        dim: int = 1024,
+        k: int = 50,
+        coherence_config: CoherenceConfig | None = None,
+    ):
         self.dim = dim
         self.k = k
         self.patterns: dict[str, EvolvingPattern] = {}
+        self.coherence_manager = CoherenceManager(coherence_config)
 
     def store(
         self,
@@ -51,7 +63,21 @@ class MemoryStore:
         metadata: dict[str, Any] | None = None,
         pattern_id: str | None = None,
     ) -> str:
-        """Store text as a pattern."""
+        """Store text as a pattern.
+
+        Operation order:
+        1. Advance tick
+        2. Decay all existing patterns
+        3. Create and store new pattern
+        4. Refresh new pattern with activation_strength=1.0
+        """
+        # Advance tick for this operation
+        self.coherence_manager.advance_tick()
+
+        # Decay all existing patterns first
+        self.coherence_manager.decay_all(self.patterns.values())
+
+        # Create and store pattern
         if pattern_id is None:
             pattern_id = str(uuid.uuid4())
 
@@ -62,6 +88,9 @@ class MemoryStore:
             metadata=metadata or {},
         )
         pattern.metadata["id"] = pattern_id
+
+        # Refresh new pattern (store = full activation)
+        self.coherence_manager.apply_refresh(pattern, activation_strength=1.0)
 
         self.patterns[pattern_id] = pattern
         return pattern_id
@@ -77,13 +106,32 @@ class MemoryStore:
         method: Literal["jaccard", "interference"] = "jaccard",
         use_evolved: bool = True,
     ) -> list[RetrievalResult]:
-        """Retrieve patterns similar to query."""
+        """Retrieve patterns similar to query.
+
+        Operation order:
+        1. Advance tick
+        2. Decay all patterns
+        3. Score patterns against query
+        4. Refresh retrieved patterns proportional to score
+        """
+        # Advance tick for this operation
+        self.coherence_manager.advance_tick()
+
+        # Decay all patterns first
+        self.coherence_manager.decay_all(self.patterns.values())
+
         query_pattern = EvolvingPattern.from_text(query, dim=self.dim, k=self.k)
 
         if method == "jaccard":
-            return self._retrieve_jaccard(query_pattern, top_k, use_evolved)
+            results = self._retrieve_jaccard(query_pattern, top_k, use_evolved)
         else:
-            return self._retrieve_interference(query_pattern, top_k, use_evolved)
+            results = self._retrieve_interference(query_pattern, top_k, use_evolved)
+
+        # Refresh retrieved patterns proportional to score
+        for result in results:
+            self.coherence_manager.apply_refresh(result.pattern, activation_strength=result.score)
+
+        return results
 
     def _retrieve_jaccard(
         self,
@@ -151,6 +199,22 @@ class MemoryStore:
 
         results.sort(key=lambda r: -r.score)
         return results[:top_k]
+
+    def get_effective_coherence(self, pattern_id: str) -> float | None:
+        """Get pattern's current coherence after decay.
+
+        Computes what the pattern's coherence would be at current tick
+        without modifying the pattern.
+        """
+        pattern = self.patterns.get(pattern_id)
+        if pattern is None:
+            return None
+        return self.coherence_manager.compute_decayed_coherence(pattern)
+
+    @property
+    def current_tick(self) -> int:
+        """Current operation tick count."""
+        return self.coherence_manager.current_tick
 
     @property
     def pattern_count(self) -> int:
