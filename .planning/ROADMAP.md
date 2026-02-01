@@ -110,10 +110,20 @@ Plans:
   5. Hypothesis validation tests have clear pass/fail criteria based on theory predictions
 **Plans**: TBD
 
+**Intuition Tests (from INTUITION.md)** — tests must address these intelligent behaviors:
+  - Generalization: repeated exposure → shared concept with attributes
+  - Inheritance: shared attributes stored efficiently, not duplicated
+  - Exceptions: specific instances can override general patterns
+  - Certainty plasticity: high-coherence nodes hard to change, low-coherence easy
+  - Conditionals: "if X then Y" represented as connected nodes
+  - Meta-relationships: analogies and reasoning about relationships
+  - Provenance: tracking where knowledge was learned (when relevant)
+  - History: how understandings change over time and why
+
 Plans:
 - [ ] 05-01: Refactor substrate for LLM-independence
 - [ ] 05-02: Document architectural boundaries
-- [ ] 05-03: Create hypothesis validation test suite
+- [ ] 05-03: Create hypothesis validation test suite (including INTUITION.md tests)
 
 ## Progress
 
