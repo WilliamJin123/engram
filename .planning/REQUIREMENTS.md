@@ -39,10 +39,10 @@ Requirements for completing coherence dynamics and establishing clean architectu
 
 ### Documentation
 
-- [ ] **DOC-01**: PROJECT.md captures full project context
-- [ ] **DOC-02**: REQUIREMENTS.md with traceable requirement IDs
-- [ ] **DOC-03**: ROADMAP.md with phases mapped to requirements
-- [ ] **DOC-04**: STATE.md for project memory across sessions
+- [x] **DOC-01**: PROJECT.md captures full project context
+- [x] **DOC-02**: REQUIREMENTS.md with traceable requirement IDs
+- [x] **DOC-03**: ROADMAP.md with phases mapped to requirements
+- [x] **DOC-04**: STATE.md for project memory across sessions
 
 ## v2 Requirements
 
@@ -79,34 +79,34 @@ Deferred to future milestone. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
+| DOC-01 | Phase 0 | Complete |
+| DOC-02 | Phase 0 | Complete |
+| DOC-03 | Phase 0 | Complete |
+| DOC-04 | Phase 0 | Complete |
 | COHR-01 | Phase 1 | Pending |
 | COHR-02 | Phase 1 | Pending |
 | COHR-03 | Phase 1 | Pending |
-| COHR-04 | Phase 2 | Pending |
-| COHR-05 | Phase 2 | Pending |
-| COHR-06 | Phase 3 | Pending |
-| COHR-07 | Phase 3 | Pending |
 | TEST-01 | Phase 1 | Pending |
 | TEST-02 | Phase 1 | Pending |
+| COHR-04 | Phase 2 | Pending |
+| COHR-05 | Phase 2 | Pending |
 | TEST-03 | Phase 2 | Pending |
 | TEST-04 | Phase 2 | Pending |
+| COHR-06 | Phase 3 | Pending |
+| COHR-07 | Phase 3 | Pending |
 | TEST-05 | Phase 3 | Pending |
-| TEST-06 | Phase 4 | Pending |
 | FIX-01 | Phase 4 | Pending |
 | FIX-02 | Phase 4 | Pending |
 | ARCH-01 | Phase 5 | Pending |
 | ARCH-02 | Phase 5 | Pending |
 | ARCH-03 | Phase 5 | Pending |
-| DOC-01 | Phase 0 | Complete |
-| DOC-02 | Phase 0 | Complete |
-| DOC-03 | Phase 0 | Pending |
-| DOC-04 | Phase 0 | Pending |
+| TEST-06 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 20 total
-- Mapped to phases: 20
+- v1 requirements: 22 total
+- Mapped to phases: 22
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-31*
-*Last updated: 2026-01-31 after initial definition*
+*Last updated: 2026-01-31 after roadmap creation*
