@@ -437,39 +437,159 @@ class ReflectionTrigger:
 
 ## Multi-Agent Memory
 
-For multiple agents sharing memory: **shared patterns, private coherence**.
+### The Unified Substrate Model
 
-```python
-class SharedMemory:
-    """Memory substrate shared across agents."""
+Multiple agents share **one substrate with one global coherence map**. The system isn't a collection of separate minds sharing notes—it's **one mind with multiple foci of attention**.
 
-    def __init__(self):
-        self.substrate = EngramSubstrate()  # shared patterns
-        self.agent_coherence = {}            # per-agent coherence maps
-
-    def store(self, agent_id: str, text: str, context: dict):
-        pattern = self.substrate.store(text, context)
-
-        # Agent-specific coherence
-        if agent_id not in self.agent_coherence:
-            self.agent_coherence[agent_id] = {}
-        self.agent_coherence[agent_id][pattern.id] = context.get("importance", 0.5)
-
-    def recall(self, agent_id: str, query: str) -> list[Memory]:
-        # Use agent's coherence values for ranking
-        candidates = self.substrate.activate(query)
-        coherence_map = self.agent_coherence.get(agent_id, {})
-
-        for c in candidates:
-            c.coherence = coherence_map.get(c.id, 0.3)  # default low for unseen
-
-        return sorted(candidates, key=lambda x: x.relevance * x.coherence)
+```
+┌─────────────────────────────────────┐
+│                                     │
+│       Unified Substrate             │
+│   (patterns + global coherence)     │
+│                                     │
+│    ┌─────┐  ┌─────┐  ┌─────┐       │
+│    │Focus│  │Focus│  │Focus│       │
+│    │  A  │  │  B  │  │  C  │       │
+│    └─────┘  └─────┘  └─────┘       │
+│                                     │
+└─────────────────────────────────────┘
 ```
 
-This enables:
-- Same facts, different salience per agent
-- Organizational memory vs individual working memory
-- Privacy through coherence (agent can't see what it hasn't accessed)
+### Why Unified (Not Per-Agent Coherence)
+
+| Per-agent coherence | Unified coherence |
+|---------------------|-------------------|
+| Conflicts hidden between agents | Conflicts surface as phase opposition |
+| Agents diverge over time | Agents naturally converge |
+| Coordination requires explicit sync | Alignment emerges from shared salience |
+| Each agent has separate "truth" | One organizational truth with uncertainty |
+
+**Core principle: Conflicts are features, not bugs.** If Agent A stores "technology X is promising" and Agent B stores "technology X has fatal flaws," both patterns exist with phase opposition. The system *knows* it has contradictory information. `reflect(depth="deep")` surfaces and resolves the contradiction.
+
+### What Is an "Agent"?
+
+An agent is not a separate entity with its own memory. It's a **query context**—a lens through which the unified substrate is accessed.
+
+| Agent property | Implementation |
+|----------------|----------------|
+| Role | Flavors how queries are formulated |
+| Focus | Topics this agent prioritizes in retrieval |
+| Attribution | `stored_by` metadata tracks who contributed what |
+| Perspective | Different agents may weight the same patterns differently in LLM reranking |
+
+The agents aren't having a conversation *between* separate minds. They're different **aspects** of one mind examining a problem from different angles.
+
+### Scoped Visibility (When Needed)
+
+Even in the unified model, some patterns may need restricted access:
+
+| Scope | Use case | Mechanism |
+|-------|----------|-----------|
+| `draft` | Work in progress, not ready for others | Metadata flag, excluded until finalized |
+| `sensitive` | Role-restricted information | Clearance level in metadata |
+| `ephemeral` | Per-query scratch space | Not stored to substrate at all |
+
+These are **metadata filters**, not separate substrates. Patterns still exist in one place; visibility is controlled at query time.
+
+### Organizational Consciousness
+
+This model treats the multi-agent system as one cognitive entity:
+
+| Human analogy | Multi-agent equivalent |
+|---------------|------------------------|
+| Different brain regions | Different agents (researcher, critic, executor) |
+| Unified consciousness | Unified substrate + coherence |
+| Internal conflict | Contradictory patterns, phase opposition |
+| Resolving conflict | Reflection, coherence competition, measurement |
+| Attention | Global coherence allocation |
+
+---
+
+## Measurement and Collapse
+
+### What Triggers Collapse?
+
+In quantum mechanics, measurement correlates system state with a macroscopic record, forcing commitment to a specific outcome. In Engram:
+
+**Measurement = committing to a specific interpretation with external consequences.**
+
+| Event | Collapse? | Reason |
+|-------|-----------|--------|
+| Activation/query | No | Just computing overlap, no commitment |
+| LLM reranking | Partial | LLM selects what's relevant—a soft measurement |
+| Agent acts on memory | Yes | External consequence, irreversible |
+| Output to user | Yes | Definite commitment, recorded |
+
+### Observe vs Measure
+
+| Mode | What happens | Use case |
+|------|--------------|----------|
+| **Observe** | Compute activations, return candidates, no state change | Exploration, hypotheticals, "what if" |
+| **Measure** | Commit to interpretation, selected patterns shift toward classical | Decision-making, action |
+
+### Collapse Effects
+
+When a pattern is measured (selected and acted upon):
+
+1. **Coherence decays slightly** — commitment to this interpretation reduces superposition
+2. **Phase relationships lock in** — the interference pattern that led to selection is reinforced
+3. **Recency updated** — pattern is marked as recently relevant
+
+Unmeasured patterns retain their quantum character—they can still interfere in future queries.
+
+### Why Collapse Matters
+
+**Collapse stabilizes frequently-used knowledge.** Patterns that get measured often become more classical (stable, reliable, less prone to interference). Patterns never measured retain uncertainty and may fade through natural decoherence.
+
+**Collapse signals importance for consolidation.** Measured patterns are candidates for abstraction during reflection—they proved useful, so they're worth remembering.
+
+---
+
+## Persistence and Crystallization
+
+### The Metaphor
+
+| Quantum mechanics | Engram |
+|-------------------|--------|
+| Quantum state (fragile, needs isolation) | High coherence (active interference) |
+| Classical state (stable, can be written down) | Low coherence (stable, phase dormant) |
+
+**Crystallization = controlled decoherence for cold storage.**
+
+### How It Works
+
+To persist the substrate:
+1. Optionally prune patterns below a coherence threshold (too faded to keep)
+2. Serialize patterns with their bits, phases, coherence, metadata, and entanglement links
+3. Store as JSON, MessagePack, or any portable format
+
+To restore:
+1. Load patterns back into substrate
+2. Optionally "reheat" coherence based on time elapsed or importance
+3. Restore entanglement links between patterns
+4. Resume dynamics
+
+### What Gets Preserved
+
+| Component | Preserved? | Notes |
+|-----------|------------|-------|
+| Active bits | Yes | The pattern identity |
+| Phases | Yes | Even if dormant, may matter when reheated |
+| Coherence | Yes | Snapshot of salience at freeze time |
+| Metadata | Yes | Attribution, topics, timestamps |
+| Entanglements | Yes | As pattern ID references |
+| Source text | Yes | For reconstruction and LLM re-analysis |
+
+### Reheating Strategies
+
+| Strategy | Description |
+|----------|-------------|
+| **Preserve exactly** | Restore coherence as saved |
+| **Time decay** | Reduce coherence based on storage duration |
+| **Importance boost** | High-importance patterns get reheated to active coherence |
+| **Query-driven** | Start cold, reheat patterns as they're accessed |
+
+Crystallization enables: pause/resume execution, serverless operation, memory sharing between systems, backup and recovery.
 
 ---
 
@@ -477,6 +597,7 @@ This enables:
 
 1. **Entanglement granularity**: Entangle at sentence level? Paragraph? Let LLM decide chunk boundaries?
 2. **Reflection depth heuristics**: When is "light" sufficient vs "deep" needed?
-3. **Cross-session continuity**: How to handle long-term patterns across agent restarts?
-4. **Contradiction resolution authority**: When should the agent be consulted vs auto-resolve?
-5. **Evaluation metrics**: How do we measure if this is actually better than RAG?
+3. **Contradiction resolution authority**: When should the agent be consulted vs auto-resolve?
+4. **Evaluation metrics**: How do we measure if this is actually better than RAG?
+5. **Text encoding strategy**: Hash-based (fast, no semantics) vs LLM-assigned codes (semantic, slower) vs hybrid?
+6. **Very long sequences**: Does phase encoding degrade beyond 100-1000 items?

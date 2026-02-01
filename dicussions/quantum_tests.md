@@ -580,5 +580,5 @@ All four validation tests passed with strong margins:
 **Next steps:**
 - Build agentic memory layer on this substrate
 - Implement coherence dynamics (Test 4 from original plan)
-- Implement Hebbian learning (Test 5 from original plan)
+- Implement Coactivation learning (Test 5 from original plan)
 - Build text encoding and LLM integration (Tests 6-7)
