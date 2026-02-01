@@ -9,9 +9,9 @@ Requirements for completing coherence dynamics and establishing clean architectu
 
 ### Coherence Dynamics
 
-- [ ] **COHR-01**: Pattern has coherence field (0-1 scalar)
-- [ ] **COHR-02**: Coherence decays toward 0 over time without interaction
-- [ ] **COHR-03**: Accessing a pattern refreshes its coherence
+- [x] **COHR-01**: Pattern has coherence field (0-1 scalar)
+- [x] **COHR-02**: Coherence decays toward 0 over time without interaction
+- [x] **COHR-03**: Accessing a pattern refreshes its coherence
 - [ ] **COHR-04**: Surprise/contradiction re-coheres decayed patterns
 - [ ] **COHR-05**: Interference strength is modulated by pattern coherence
 - [ ] **COHR-06**: High-coherence patterns can tunnel to weakly-related patterns
@@ -19,8 +19,8 @@ Requirements for completing coherence dynamics and establishing clean architectu
 
 ### Validation Tests
 
-- [ ] **TEST-01**: Tests validate coherence decay behavior mathematically
-- [ ] **TEST-02**: Tests validate coherence refresh on access
+- [x] **TEST-01**: Tests validate coherence decay behavior mathematically
+- [x] **TEST-02**: Tests validate coherence refresh on access
 - [ ] **TEST-03**: Tests validate surprise-triggered re-coherence
 - [ ] **TEST-04**: Tests validate coherence-modulated interference produces better retrieval
 - [ ] **TEST-05**: Tests validate tunneling enables creative/exploratory activation
@@ -83,11 +83,11 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | DOC-02 | Phase 0 | Complete |
 | DOC-03 | Phase 0 | Complete |
 | DOC-04 | Phase 0 | Complete |
-| COHR-01 | Phase 1 | Pending |
-| COHR-02 | Phase 1 | Pending |
-| COHR-03 | Phase 1 | Pending |
-| TEST-01 | Phase 1 | Pending |
-| TEST-02 | Phase 1 | Pending |
+| COHR-01 | Phase 1 | Complete |
+| COHR-02 | Phase 1 | Complete |
+| COHR-03 | Phase 1 | Complete |
+| TEST-01 | Phase 1 | Complete |
+| TEST-02 | Phase 1 | Complete |
 | COHR-04 | Phase 2 | Pending |
 | COHR-05 | Phase 2 | Pending |
 | TEST-03 | Phase 2 | Pending |
@@ -109,4 +109,4 @@ Deferred to future milestone. Tracked but not in current roadmap.
 
 ---
 *Requirements defined: 2026-01-31*
-*Last updated: 2026-01-31 after roadmap creation*
+*Last updated: 2026-02-01 after Phase 1 completion*

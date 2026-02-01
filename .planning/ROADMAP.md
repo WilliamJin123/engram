@@ -11,7 +11,7 @@ This milestone implements coherence dynamics for the quantum-inspired memory sub
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 0: Documentation** - Project planning artifacts (DOC-01, DOC-02, DOC-03, DOC-04)
-- [ ] **Phase 1: Coherence Foundation** - Core coherence field with decay and refresh
+- [x] **Phase 1: Coherence Foundation** - Core coherence field with decay and refresh
 - [ ] **Phase 2: Coherence Effects** - Surprise re-coherence and interference modulation
 - [ ] **Phase 3: Advanced Dynamics** - Tunneling and criticality tuning
 - [ ] **Phase 4: Codebase Cleanup** - Determinism fixes (parallel track)
@@ -46,8 +46,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Add coherence field to EvolvingPattern and create CoherenceManager
-- [ ] 01-02-PLAN.md — Wire CoherenceManager into operations and validate with tests
+- [x] 01-01-PLAN.md — Add coherence field to EvolvingPattern and create CoherenceManager
+- [x] 01-02-PLAN.md — Wire CoherenceManager into operations and validate with tests
 
 ### Phase 2: Coherence Effects
 **Goal**: Coherence modulates interference and surprise re-coheres decayed patterns
@@ -133,7 +133,7 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Documentation | 1/1 | Complete | 2026-01-31 |
-| 1. Coherence Foundation | 0/2 | Ready for execution | - |
+| 1. Coherence Foundation | 2/2 | Complete | 2026-02-01 |
 | 2. Coherence Effects | 0/3 | Not started | - |
 | 3. Advanced Dynamics | 0/3 | Not started | - |
 | 4. Codebase Cleanup | 0/2 | Not started | - |
@@ -142,3 +142,4 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 ---
 *Roadmap created: 2026-01-31*
 *Phase 1 planned: 2026-02-01*
+*Phase 1 completed: 2026-02-01*
