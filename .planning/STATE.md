@@ -5,34 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-01-31)
 
 **Core value:** Engineer the substrate. Let everything else emerge.
-**Current focus:** Phase 1 - Coherence Foundation
+**Current focus:** Phase 2 - Coherence Integration (Phase 1 Complete)
 
 ## Current Position
 
-Phase: 1 of 5 (Coherence Foundation)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-01 — Completed 01-01-PLAN.md (Core Coherence Data Structures)
+Phase: 1 of 5 (Coherence Foundation) - COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-01 — Completed 01-02-PLAN.md (Integration Hooks)
 
-Progress: [###░░░░░░░] 15% (2/13 plans complete)
+Progress: [####░░░░░░] 23% (3/13 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
+- Total plans completed: 3
 - Average duration: 9 min
-- Total execution time: 9 min
+- Total execution time: 17 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 0. Documentation | 1 | - | - |
-| 1. Coherence Foundation | 1 | 9 min | 9 min |
+| 1. Coherence Foundation | 2 | 17 min | 9 min |
 
 **Recent Trend:**
-- Last 5 plans: [init, 01-01]
-- Trend: Starting
+- Last 5 plans: [init, 01-01, 01-02]
+- Trend: Consistent
 
 *Updated after each plan completion*
 
@@ -49,6 +49,8 @@ Recent decisions affecting current work:
 - [01-01]: Coherence floor 0.01 (never fully decohere)
 - [01-01]: Embeddedness = 1.0 + 0.1 * connection_count
 - [01-01]: Refresh uses diminishing returns (50% of headroom per activation)
+- [01-02]: Refresh proportional to retrieval score (not fixed 1.0)
+- [01-02]: connection_count increments even when no bits transfer
 
 ### Pending Todos
 
@@ -64,7 +66,7 @@ From CONCERNS.md analysis:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 01-01-PLAN.md, ready for 01-02-PLAN.md (Integration Hooks)
+Stopped at: Completed Phase 1 (Coherence Foundation), ready for Phase 2
 Resume file: None
 
 ---
