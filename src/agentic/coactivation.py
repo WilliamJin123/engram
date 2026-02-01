@@ -21,9 +21,12 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
 from agentic.evolving_pattern import EvolvingPattern
+
+if TYPE_CHECKING:
+    from quantum_substrate.coherence import CoherenceManager
 
 
 @dataclass
@@ -40,6 +43,8 @@ def coactivate(
     patterns: Sequence[EvolvingPattern],
     strength: float | None = None,
     config: CoactivationConfig | None = None,
+    coherence_manager: "CoherenceManager | None" = None,
+    activation_scores: Sequence[float] | None = None,
 ) -> None:
     """Apply coactivation to a group of patterns.
 
@@ -50,6 +55,8 @@ def coactivate(
         patterns: Patterns to coactivate (typically top-k from retrieval).
         strength: Learning rate (overrides config if provided).
         config: Full configuration (uses defaults if not provided).
+        coherence_manager: Optional manager to refresh coherence.
+        activation_scores: Optional scores for each pattern (for proportional refresh).
     """
     if config is None:
         config = CoactivationConfig()
@@ -61,11 +68,20 @@ def coactivate(
             bidirectional=config.bidirectional,
         )
 
+    # Coactivation logic with connection tracking
     for i, p1 in enumerate(patterns):
         for p2 in patterns[i + 1:]:
             _transfer_bits(p1, p2, config)
             if config.bidirectional:
                 _transfer_bits(p2, p1, config)
+
+    # Optional coherence refresh for coactivated patterns
+    if coherence_manager is not None:
+        if activation_scores is None:
+            # Default to 1.0 for all patterns
+            activation_scores = [1.0] * len(patterns)
+        for pattern, score in zip(patterns, activation_scores):
+            coherence_manager.apply_refresh(pattern, activation_strength=score)
 
 
 def _transfer_bits(
@@ -77,10 +93,13 @@ def _transfer_bits(
 
     Only transfers ORIGINAL bits from source (not acquired bits).
     Respects max_bits budget and obesity decay.
+    Also increments connection_count for embeddedness tracking.
     """
     transferable = source.original_bits - target.bits
 
     if not transferable:
+        # Still count the connection attempt for embeddedness
+        target.connection_count += 1
         return
 
     effective_strength = config.strength
@@ -92,6 +111,8 @@ def _transfer_bits(
 
     available_slots = config.max_bits - len(target.bits)
     if available_slots <= 0:
+        # Count connection even when at capacity
+        target.connection_count += 1
         return
     n_transfer = min(n_transfer, available_slots)
 
@@ -103,4 +124,6 @@ def _transfer_bits(
         if bit in source.phases:
             target.phases[bit] = source.phases[bit]
 
+    # Track connection and acquisition
+    target.connection_count += 1
     target.acquisition_count += 1
