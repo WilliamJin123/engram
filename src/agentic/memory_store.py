@@ -16,6 +16,12 @@ import torch
 from agentic.evolving_pattern import EvolvingPattern
 from quantum_substrate.coherence import CoherenceManager, CoherenceConfig
 from quantum_substrate.surprise import SurpriseDetector, SurpriseResult
+from quantum_substrate.tunneling import (
+    TunnelingConfig,
+    TunnelingResult,
+    CreativeModeTracker,
+    attempt_tunneling,
+)
 
 
 @dataclass
@@ -58,6 +64,8 @@ class MemoryStore:
         self.patterns: dict[str, EvolvingPattern] = {}
         self.coherence_manager = CoherenceManager(coherence_config)
         self.connection_map: dict[str, set[str]] = {}  # pattern_id -> connected pattern IDs
+        self.tunneling_config = TunnelingConfig()
+        self.creative_tracker = CreativeModeTracker()
 
     def store(
         self,
@@ -542,3 +550,121 @@ class MemoryStore:
 
         results.sort(key=lambda r: -r.score)
         return results[:top_k]
+
+    def set_tunneling_config(self, config: TunnelingConfig) -> None:
+        """Update tunneling configuration.
+
+        Args:
+            config: New tunneling configuration.
+        """
+        self.tunneling_config = config
+
+    def retrieve_with_tunneling(
+        self,
+        query: str,
+        top_k: int = 10,
+        creative_mode: bool | None = None,  # None = auto-detect
+        use_evolved: bool = True,
+        max_tunnel_results: int = 2,  # Max additional results from tunneling
+    ) -> tuple[list[RetrievalResult], list[TunnelingResult]]:
+        """Retrieve with optional tunneling for creative/exploratory activation.
+
+        Tunneling allows top results to activate weakly-related but connected
+        patterns, enabling associative leaps.
+
+        Operation order:
+        1. Advance tick, decay all patterns
+        2. Retrieve using pure similarity
+        3. Record top score for creative mode auto-detection
+        4. Determine creative mode (explicit or auto)
+        5. Attempt tunneling from top results
+        6. Add tunneled patterns to results if not already present
+        7. Re-sort and return
+
+        Args:
+            query: Query text.
+            top_k: Number of primary results.
+            creative_mode: If None, auto-detect based on retrieval quality.
+                If True, amplify tunneling. If False, baseline only.
+            use_evolved: Use evolved bits.
+            max_tunnel_results: Max tunneled patterns to add to results.
+
+        Returns:
+            Tuple of (results, tunnel_results):
+            - results: Retrieved patterns (may include tunneled ones)
+            - tunnel_results: Details of tunneling attempts
+        """
+        # Step 1: Advance tick for this operation
+        self.coherence_manager.advance_tick()
+
+        # Step 2: Decay all patterns first
+        self.coherence_manager.decay_all(self.patterns.values())
+
+        if not self.patterns:
+            return [], []
+
+        # Step 3: Create query pattern and retrieve using pure similarity
+        query_pattern = EvolvingPattern.from_text(query, dim=self.dim, k=self.k)
+        results = self._retrieve_pure_similarity_internal(query_pattern, top_k, use_evolved)
+
+        if not results:
+            return [], []
+
+        # Step 4: Record top score for creative mode tracking
+        top_score = results[0].score
+        self.creative_tracker.record_score(top_score)
+
+        # Step 5: Determine creative mode
+        if creative_mode is None:
+            creative_mode = self.creative_tracker.should_activate_creative()
+
+        # Step 6: Attempt tunneling from top 3 results (or fewer)
+        all_tunnel_results: list[TunnelingResult] = []
+        result_ids = {r.pattern_id for r in results}
+        tunneled_patterns: list[RetrievalResult] = []
+
+        num_to_try = min(3, len(results))
+        for i in range(num_to_try):
+            source_result = results[i]
+            source = source_result.pattern
+            source_id = source_result.pattern_id
+
+            tunnel_result = attempt_tunneling(
+                source=source,
+                source_id=source_id,
+                all_patterns=self.patterns,
+                connections=self.connection_map,
+                config=self.tunneling_config,
+                creative_mode=creative_mode,
+            )
+            all_tunnel_results.append(tunnel_result)
+
+            # If tunneling succeeded and target not already in results
+            if tunnel_result.tunneled and tunnel_result.target_pattern_id:
+                target_id = tunnel_result.target_pattern_id
+                if target_id not in result_ids and len(tunneled_patterns) < max_tunnel_results:
+                    target_pattern = self.patterns.get(target_id)
+                    if target_pattern:
+                        # Score tunneled result based on tunnel strength
+                        tunneled_score = tunnel_result.tunnel_strength * 0.5
+                        tunneled_patterns.append(RetrievalResult(
+                            pattern_id=target_id,
+                            pattern=target_pattern,
+                            score=tunneled_score,
+                        ))
+                        result_ids.add(target_id)
+
+        # Step 7: Combine results with tunneled patterns
+        combined = results + tunneled_patterns
+
+        # Re-sort by score
+        combined.sort(key=lambda r: -r.score)
+
+        # Trim to top_k
+        final_results = combined[:top_k]
+
+        # Step 8: Refresh retrieved patterns proportional to score
+        for result in final_results:
+            self.coherence_manager.apply_refresh(result.pattern, activation_strength=result.score)
+
+        return final_results, all_tunnel_results
