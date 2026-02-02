@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-31)
 
 **Core value:** Engineer the substrate. Let everything else emerge.
-**Current focus:** Phase 3 - Advanced Dynamics VERIFIED ✓
+**Current focus:** Phase 4 - Codebase Cleanup
 
 ## Current Position
 
-Phase: 3 of 5 (Advanced Dynamics) - VERIFIED ✓
-Plan: 4 of 4 in current phase (phase verified)
-Status: Phase verified, ready for Phase 4
-Last activity: 2026-02-02 - Verified Phase 3 goal achievement (7/7 must-haves)
+Phase: 4 of 5 (Codebase Cleanup)
+Plan: 2 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-01 - Completed 04-02-PLAN.md (Fix Text Encoding Hash Collisions)
 
-Progress: [##########] 77% (10/13 plans complete)
+Progress: [###########] 85% (11/13 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
+- Total plans completed: 11
 - Average duration: 7 min
-- Total execution time: 72 min
+- Total execution time: 80 min
 
 **By Phase:**
 
@@ -31,9 +31,10 @@ Progress: [##########] 77% (10/13 plans complete)
 | 1. Coherence Foundation | 2 | 17 min | 9 min |
 | 2. Coherence Effects | 3 | 30 min | 10 min |
 | 3. Advanced Dynamics | 4 | 25 min | 6 min |
+| 4. Codebase Cleanup | 2 | 8 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: [02-03, 03-01, 03-02, 03-03, 03-04]
+- Last 5 plans: [03-02, 03-03, 03-04, 04-01, 04-02]
 - Trend: Consistent, accelerating
 
 *Updated after each plan completion*
@@ -71,6 +72,9 @@ Recent decisions affecting current work:
 - [03-03]: Auto-adjust criticality every 10 operations
 - [03-04]: Test files organized by feature module (coherence/, tunneling/, criticality/)
 - [03-04]: Use seeded RNG for deterministic tunneling tests
+- [04-01]: Seeded RNG parameter added to coactivation for deterministic tests
+- [04-02]: Use int.from_bytes(h[:8], 'big') for 64-bit hash extraction
+- [04-02]: Minimum k=10 enforced at TextEncoder initialization
 
 ### Pending Todos
 
@@ -79,16 +83,16 @@ None yet.
 ### Blockers/Concerns
 
 From CONCERNS.md analysis:
-- Random bit transfer in coactivation is non-deterministic (FIX-01, Phase 4)
-- Text encoding collision at small k values (FIX-02, Phase 4)
+- ~~Random bit transfer in coactivation is non-deterministic (FIX-01, Phase 4)~~ RESOLVED
+- ~~Text encoding collision at small k values (FIX-02, Phase 4)~~ RESOLVED
 - Patterns grow unbounded until max_bits; no backpressure (v2 scope)
 
 ## Session Continuity
 
-Last session: 2026-02-02
-Stopped at: Completed 03-04-PLAN.md (Phase 3 Tests - TEST-05) - Phase 3 Complete with full test coverage
+Last session: 2026-02-01
+Stopped at: Completed 04-02-PLAN.md (Fix Text Encoding Hash Collisions)
 Resume file: None
 
 ---
 *State initialized: 2026-01-31*
-*Last updated: 2026-02-02*
+*Last updated: 2026-02-01*
