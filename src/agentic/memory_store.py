@@ -22,6 +22,7 @@ from quantum_substrate.tunneling import (
     CreativeModeTracker,
     attempt_tunneling,
 )
+from quantum_substrate.criticality import CriticalityConfig, CriticalityState
 
 
 @dataclass
@@ -66,6 +67,9 @@ class MemoryStore:
         self.connection_map: dict[str, set[str]] = {}  # pattern_id -> connected pattern IDs
         self.tunneling_config = TunnelingConfig()
         self.creative_tracker = CreativeModeTracker()
+        self.criticality = CriticalityState()
+        self._operation_count: int = 0
+        self._criticality_adjust_interval: int = 10  # Adjust every 10 operations
 
     def store(
         self,
@@ -559,6 +563,26 @@ class MemoryStore:
         """
         self.tunneling_config = config
 
+    def get_criticality(self) -> float:
+        """Get current criticality value."""
+        return self.criticality.value
+
+    def set_criticality_config(self, config: CriticalityConfig) -> None:
+        """Update criticality configuration.
+
+        Args:
+            config: New criticality configuration.
+        """
+        self.criticality = CriticalityState(config=config)
+
+    def adjust_criticality(self) -> float:
+        """Manually trigger criticality self-adjustment.
+
+        Returns:
+            New criticality value after adjustment.
+        """
+        return self.criticality.self_adjust()
+
     def retrieve_with_tunneling(
         self,
         query: str,
@@ -566,20 +590,23 @@ class MemoryStore:
         creative_mode: bool | None = None,  # None = auto-detect
         use_evolved: bool = True,
         max_tunnel_results: int = 2,  # Max additional results from tunneling
+        auto_adjust_criticality: bool = True,  # Whether to record feedback
     ) -> tuple[list[RetrievalResult], list[TunnelingResult]]:
         """Retrieve with optional tunneling for creative/exploratory activation.
 
         Tunneling allows top results to activate weakly-related but connected
-        patterns, enabling associative leaps.
+        patterns, enabling associative leaps. Criticality affects tunneling
+        probability via the tunneling_amplification multiplier.
 
         Operation order:
         1. Advance tick, decay all patterns
         2. Retrieve using pure similarity
         3. Record top score for creative mode auto-detection
         4. Determine creative mode (explicit or auto)
-        5. Attempt tunneling from top results
+        5. Attempt tunneling from top results (with criticality amplification)
         6. Add tunneled patterns to results if not already present
-        7. Re-sort and return
+        7. Record feedback and auto-adjust criticality
+        8. Re-sort and return
 
         Args:
             query: Query text.
@@ -588,6 +615,8 @@ class MemoryStore:
                 If True, amplify tunneling. If False, baseline only.
             use_evolved: Use evolved bits.
             max_tunnel_results: Max tunneled patterns to add to results.
+            auto_adjust_criticality: If True, record feedback and periodically
+                auto-adjust criticality value.
 
         Returns:
             Tuple of (results, tunnel_results):
@@ -663,7 +692,21 @@ class MemoryStore:
         # Trim to top_k
         final_results = combined[:top_k]
 
-        # Step 8: Refresh retrieved patterns proportional to score
+        # Step 8: Record feedback for criticality adjustment
+        # Surprise indicator: successful tunneling = discovery of unexpected pattern
+        had_surprise = any(tr.tunneled for tr in all_tunnel_results)
+        if auto_adjust_criticality:
+            self.criticality.record_feedback(
+                retrieval_quality=top_score,
+                had_surprise=had_surprise,
+            )
+            # Auto-adjust every N operations
+            self._operation_count += 1
+            if self._operation_count >= self._criticality_adjust_interval:
+                self.criticality.self_adjust()
+                self._operation_count = 0
+
+        # Step 9: Refresh retrieved patterns proportional to score
         for result in final_results:
             self.coherence_manager.apply_refresh(result.pattern, activation_strength=result.score)
 
