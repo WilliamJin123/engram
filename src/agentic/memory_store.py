@@ -57,6 +57,7 @@ class MemoryStore:
         self.k = k
         self.patterns: dict[str, EvolvingPattern] = {}
         self.coherence_manager = CoherenceManager(coherence_config)
+        self.connection_map: dict[str, set[str]] = {}  # pattern_id -> connected pattern IDs
 
     def store(
         self,
@@ -94,11 +95,45 @@ class MemoryStore:
         self.coherence_manager.apply_refresh(pattern, activation_strength=1.0)
 
         self.patterns[pattern_id] = pattern
+
+        # Initialize connection entry for new pattern
+        if pattern_id not in self.connection_map:
+            self.connection_map[pattern_id] = set()
+
         return pattern_id
 
     def get(self, pattern_id: str) -> EvolvingPattern | None:
         """Get pattern by ID."""
         return self.patterns.get(pattern_id)
+
+    def create_connection(self, pattern_id_a: str, pattern_id_b: str) -> None:
+        """Create bidirectional connection between patterns.
+
+        Connections are used for tunneling - patterns can only tunnel
+        to connected patterns.
+
+        Args:
+            pattern_id_a: First pattern ID.
+            pattern_id_b: Second pattern ID.
+        """
+        if pattern_id_a not in self.connection_map:
+            self.connection_map[pattern_id_a] = set()
+        if pattern_id_b not in self.connection_map:
+            self.connection_map[pattern_id_b] = set()
+
+        self.connection_map[pattern_id_a].add(pattern_id_b)
+        self.connection_map[pattern_id_b].add(pattern_id_a)
+
+    def get_connections(self, pattern_id: str) -> set[str]:
+        """Get IDs of patterns connected to this pattern.
+
+        Args:
+            pattern_id: Pattern to get connections for.
+
+        Returns:
+            Set of connected pattern IDs (copy to prevent mutation).
+        """
+        return self.connection_map.get(pattern_id, set()).copy()
 
     def retrieve(
         self,
