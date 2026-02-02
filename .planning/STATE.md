@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-31)
 
 **Core value:** Engineer the substrate. Let everything else emerge.
-**Current focus:** Phase 3 - Advanced Dynamics (Phase 2 Verified)
+**Current focus:** Phase 3 - Advanced Dynamics
 
 ## Current Position
 
-Phase: 2 of 5 (Coherence Effects) - VERIFIED ✓
-Plan: 3 of 3 in current phase
-Status: Phase verified, ready for Phase 3
-Last activity: 2026-02-01 — Verified Phase 2 goal achievement
+Phase: 3 of 5 (Advanced Dynamics)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-02 — Completed 03-01-PLAN.md (Crystallization Dynamics)
 
-Progress: [######░░░░] 46% (6/13 plans complete)
+Progress: [#######░░░] 54% (7/13 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 9 min
-- Total execution time: 47 min
+- Total plans completed: 7
+- Average duration: 8 min
+- Total execution time: 51 min
 
 **By Phase:**
 
@@ -30,9 +30,10 @@ Progress: [######░░░░] 46% (6/13 plans complete)
 | 0. Documentation | 1 | - | - |
 | 1. Coherence Foundation | 2 | 17 min | 9 min |
 | 2. Coherence Effects | 3 | 30 min | 10 min |
+| 3. Advanced Dynamics | 1 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: [01-01, 01-02, 02-01, 02-02, 02-03]
+- Last 5 plans: [01-02, 02-01, 02-02, 02-03, 03-01]
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -57,6 +58,10 @@ Recent decisions affecting current work:
 - [02-02]: Surprise magnitude = normalized Hamming distance (symmetric_diff / union)
 - [02-02]: Re-coherence scaling: surprising=1.0x, expected=0.5x, participants=0.3x*involvement
 - [02-02]: Minimum surprise threshold 0.001 to skip trivial updates
+- [03-01]: Stability score = min(1.0, access_count / 10.0) - 10 accesses = max stability
+- [03-01]: Crystallization multiplier = 1.0 + factor * stability
+- [03-01]: Re-coherence scaled by coherence (malleability) with min_delta=0.01 floor
+- [03-01]: Pure similarity retrieval uses Jaccard only - no embeddedness weighting
 
 ### Pending Todos
 
@@ -71,10 +76,10 @@ From CONCERNS.md analysis:
 
 ## Session Continuity
 
-Last session: 2026-02-01
-Stopped at: Phase 2 verified - all 5 must-haves passed
+Last session: 2026-02-02
+Stopped at: Completed 03-01-PLAN.md (Crystallization Dynamics)
 Resume file: None
 
 ---
 *State initialized: 2026-01-31*
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-02*
