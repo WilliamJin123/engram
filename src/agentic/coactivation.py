@@ -45,6 +45,7 @@ def coactivate(
     config: CoactivationConfig | None = None,
     coherence_manager: "CoherenceManager | None" = None,
     activation_scores: Sequence[float] | None = None,
+    rng: random.Random | None = None,
 ) -> None:
     """Apply coactivation to a group of patterns.
 
@@ -57,6 +58,7 @@ def coactivate(
         config: Full configuration (uses defaults if not provided).
         coherence_manager: Optional manager to refresh coherence.
         activation_scores: Optional scores for each pattern (for proportional refresh).
+        rng: Optional Random instance for deterministic testing.
     """
     if config is None:
         config = CoactivationConfig()
@@ -68,12 +70,15 @@ def coactivate(
             bidirectional=config.bidirectional,
         )
 
+    # Create local RNG reference (falls back to global random module)
+    _rng = rng if rng is not None else random
+
     # Coactivation logic with connection tracking
     for i, p1 in enumerate(patterns):
         for p2 in patterns[i + 1:]:
-            _transfer_bits(p1, p2, config)
+            _transfer_bits(p1, p2, config, _rng)
             if config.bidirectional:
-                _transfer_bits(p2, p1, config)
+                _transfer_bits(p2, p1, config, _rng)
 
     # Optional coherence refresh for coactivated patterns
     if coherence_manager is not None:
@@ -88,12 +93,19 @@ def _transfer_bits(
     source: EvolvingPattern,
     target: EvolvingPattern,
     config: CoactivationConfig,
+    rng: random.Random | None = None,
 ) -> None:
     """Transfer bits from source to target.
 
     Only transfers ORIGINAL bits from source (not acquired bits).
     Respects max_bits budget and obesity decay.
     Also increments connection_count for embeddedness tracking.
+
+    Args:
+        source: Pattern to transfer bits from.
+        target: Pattern to transfer bits to.
+        config: Coactivation configuration.
+        rng: Optional Random instance for deterministic testing.
     """
     transferable = source.original_bits - target.bits
 
@@ -116,7 +128,9 @@ def _transfer_bits(
         return
     n_transfer = min(n_transfer, available_slots)
 
-    bits_to_add = set(random.sample(list(transferable), min(n_transfer, len(transferable))))
+    # Use provided RNG or fall back to global random module
+    _rng = rng if rng is not None else random
+    bits_to_add = set(_rng.sample(list(transferable), min(n_transfer, len(transferable))))
 
     for bit in bits_to_add:
         target.bits.add(bit)
