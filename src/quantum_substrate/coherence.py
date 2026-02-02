@@ -27,6 +27,7 @@ class CoherenceConfig:
     decay_rate: float = 0.05  # Base decay rate (half-life ~14 ticks)
     floor: float = 0.01  # Minimum coherence (never fully zero)
     refresh_cap: float = 1.0  # Maximum coherence after refresh
+    crystallization_factor: float = 1.0  # How much stability accelerates decay
 
 
 class CoherenceManager:
@@ -62,32 +63,79 @@ class CoherenceManager:
     def compute_decayed_coherence(
         self,
         pattern: "EvolvingPattern",
+        stability_score: float | None = None,
     ) -> float:
         """Compute what pattern's coherence would be after decay.
 
         Uses lazy evaluation: computes decay from last_access_tick to current_tick.
         Does NOT modify the pattern — call apply_decay for that.
 
-        Formula: coherence * exp(-decay_rate * dt / embeddedness)
+        Crystallization: stable patterns (high stability_score) decay faster.
+        Formula: coherence * exp(-effective_rate * dt)
+        where effective_rate = base_rate * (1 + crystallization_factor * stability) / embeddedness
+
+        Args:
+            pattern: Pattern to compute decay for.
+            stability_score: Override stability score (for testing). If None,
+                uses pattern.stability_score if available, else 0.0.
         """
         dt = self._current_tick - pattern.last_access_tick
         if dt <= 0:
             return pattern.coherence
 
-        effective_rate = self.config.decay_rate / pattern.embeddedness
+        # Get stability score for crystallization
+        if stability_score is None:
+            stability_score = getattr(pattern, 'stability_score', 0.0)
+
+        # Crystallization: stable patterns decay faster
+        # effective_rate = base_rate * (1 + crystallization_factor * stability) / embeddedness
+        crystallization_multiplier = 1.0 + self.config.crystallization_factor * stability_score
+        effective_rate = self.config.decay_rate * crystallization_multiplier / pattern.embeddedness
+
         decayed = pattern.coherence * math.exp(-effective_rate * dt)
         return max(self.config.floor, decayed)
 
     def apply_decay(
         self,
         pattern: "EvolvingPattern",
+        stability_score: float | None = None,
     ) -> float:
         """Apply decay to pattern and update its coherence.
 
+        Also records access for stability tracking (pattern was accessed).
+
+        Args:
+            pattern: Pattern to decay.
+            stability_score: Override stability score (for testing).
+
         Returns the new coherence value.
         """
-        pattern.coherence = self.compute_decayed_coherence(pattern)
+        pattern.coherence = self.compute_decayed_coherence(pattern, stability_score)
+
+        # Record access for stability tracking
+        if hasattr(pattern, 'record_access'):
+            pattern.record_access()
+
         return pattern.coherence
+
+    def apply_crystallization_decay(
+        self,
+        pattern: "EvolvingPattern",
+        stability_score: float | None = None,
+    ) -> float:
+        """Apply decay with explicit stability score control.
+
+        Same as apply_decay but allows passing explicit stability score
+        for testing and fine-grained control.
+
+        Args:
+            pattern: Pattern to decay.
+            stability_score: Stability score to use (0-1). If None, uses
+                pattern's stability_score.
+
+        Returns the new coherence value.
+        """
+        return self.apply_decay(pattern, stability_score)
 
     def apply_refresh(
         self,
@@ -156,12 +204,19 @@ class CoherenceManager:
         patterns: dict[str, "EvolvingPattern"],
         surprise: "SurpriseResult",
         boost_coefficient: float = 0.5,
+        min_delta: float = 0.01,
     ) -> dict[str, float]:
         """Apply re-coherence based on surprise result.
 
         Surprise triggers re-coherence of involved patterns, allowing decayed
         or even zero-coherence patterns to be resurrected through unexpected
         retrieval results.
+
+        Phase 3 semantics: coherence = malleability. Low-coherence (crystallized)
+        patterns resist change. The actual delta is scaled by current coherence:
+        actual_delta = proposed_delta * pattern.coherence
+
+        To prevent completely frozen patterns, a minimum delta threshold applies.
 
         Scaling per CONTEXT.md:
         - Surprising pattern (unexpected result): full proportional boost
@@ -175,6 +230,8 @@ class CoherenceManager:
             surprise: Detection result from SurpriseDetector.
             boost_coefficient: Convert surprise magnitude to coherence boost.
                 Default 0.5 means magnitude=1.0 gives base_boost=0.5.
+            min_delta: Minimum delta to apply regardless of coherence (prevents
+                complete freeze). Default 0.01.
 
         Returns:
             Dict of pattern_id -> coherence delta applied.
@@ -187,21 +244,40 @@ class CoherenceManager:
         base_boost = surprise.magnitude * boost_coefficient
         deltas: dict[str, float] = {}
 
+        def apply_malleability_scaled_boost(pattern: "EvolvingPattern", proposed_delta: float) -> float:
+            """Apply boost scaled by coherence (malleability).
+
+            Low-coherence patterns resist change, but min_delta prevents freeze.
+            """
+            # Scale by current coherence (malleability)
+            scaled_delta = proposed_delta * pattern.coherence
+
+            # Ensure minimum delta to prevent complete freeze
+            if proposed_delta > 0 and scaled_delta < min_delta:
+                scaled_delta = min(min_delta, proposed_delta)
+
+            # Cap at headroom
+            headroom = self.config.refresh_cap - pattern.coherence
+            actual_delta = min(scaled_delta, headroom)
+
+            if actual_delta > 0.0001:
+                pattern.coherence += actual_delta
+
+            return actual_delta
+
         # 1. Surprising pattern gets full boost
         if surprise.surprising_pattern_id and surprise.surprising_pattern_id in patterns:
             pattern = patterns[surprise.surprising_pattern_id]
-            headroom = self.config.refresh_cap - pattern.coherence
-            delta = min(base_boost, headroom)
-            pattern.coherence += delta
-            deltas[surprise.surprising_pattern_id] = delta
+            delta = apply_malleability_scaled_boost(pattern, base_boost)
+            if delta > 0.0001:
+                deltas[surprise.surprising_pattern_id] = delta
 
         # 2. Expected (wrong prediction) gets 0.5x boost
         if surprise.expected_pattern_id and surprise.expected_pattern_id in patterns:
             pattern = patterns[surprise.expected_pattern_id]
-            headroom = self.config.refresh_cap - pattern.coherence
-            delta = min(base_boost * 0.5, headroom)
-            pattern.coherence += delta
-            deltas[surprise.expected_pattern_id] = delta
+            delta = apply_malleability_scaled_boost(pattern, base_boost * 0.5)
+            if delta > 0.0001:
+                deltas[surprise.expected_pattern_id] = delta
 
         # 3. Other participants get 0.3x * involvement
         for pattern_id, involvement in surprise.participant_scores.items():
@@ -212,12 +288,9 @@ class CoherenceManager:
                 continue
 
             pattern = patterns[pattern_id]
-            headroom = self.config.refresh_cap - pattern.coherence
-            delta = min(base_boost * involvement * 0.3, headroom)
-
-            # Only record if delta is meaningful
+            proposed_delta = base_boost * involvement * 0.3
+            delta = apply_malleability_scaled_boost(pattern, proposed_delta)
             if delta > 0.0001:
-                pattern.coherence += delta
                 deltas[pattern_id] = delta
 
         return deltas
