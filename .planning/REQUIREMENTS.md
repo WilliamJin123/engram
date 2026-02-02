@@ -16,6 +16,7 @@ Requirements for completing coherence dynamics and establishing clean architectu
 - [x] **COHR-05**: Interference strength is modulated by pattern coherence
 - [ ] **COHR-06**: High-coherence patterns can tunnel to weakly-related patterns
 - [ ] **COHR-07**: System-wide criticality parameter tunes order vs chaos balance
+- [ ] **COHR-08**: Retrieval weighted by embeddedness (coherence = malleability, not accessibility)
 
 ### Validation Tests
 
@@ -92,6 +93,7 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | COHR-05 | Phase 2 | Complete |
 | TEST-03 | Phase 2 | Complete |
 | TEST-04 | Phase 2 | Complete |
+| COHR-08 | Phase 3 | Pending |
 | COHR-06 | Phase 3 | Pending |
 | COHR-07 | Phase 3 | Pending |
 | TEST-05 | Phase 3 | Pending |
@@ -103,8 +105,8 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | TEST-06 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 22 total
-- Mapped to phases: 22
+- v1 requirements: 23 total
+- Mapped to phases: 23
 - Unmapped: 0
 
 ---

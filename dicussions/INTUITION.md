@@ -7,6 +7,7 @@
 - A penguin is a bird but cannot fly
 
 - Abstract example: if we are crucially certain that the Earth is round, it should be very hard to change the node to the Earth is flat, but not impossible based on the amount of evidence. However, if we are not sure what color an object is for example, someone telling us or showing us a color of the object should quickly lock in the color.
+  - **Technical mapping:** Certainty = LOW coherence (crystallized/collapsed). Uncertainty = HIGH coherence (malleable/in superposition). Accessibility is separate - emerges from embeddedness/connections, not coherence.
 
 - Conditionals ==> I can go outside if the weather is nice. The weather is nice if it is sunny.
 - Meta-relationships ==> analogies, reasoning about relationships, certainty of relationships, etc.

@@ -67,21 +67,24 @@ Plans:
 - [x] 02-03-PLAN.md — Surprise integration and re-coherence tests (COHR-04, TEST-03)
 
 ### Phase 3: Advanced Dynamics
-**Goal**: High-coherence patterns can tunnel to weakly-related patterns; system has criticality tuning
+**Goal**: Fix coherence semantics (malleability not accessibility), add tunneling and criticality
 **Depends on**: Phase 2
-**Requirements**: COHR-06, COHR-07, TEST-05
+**Requirements**: COHR-08, COHR-06, COHR-07, TEST-05
 **Success Criteria** (what must be TRUE):
-  1. High-coherence patterns can activate patterns they have low direct similarity with (tunneling)
-  2. Tunneling strength is proportional to source pattern coherence
-  3. System-wide criticality parameter controls the order/chaos balance (low = rigid, high = chaotic)
-  4. Criticality affects tunneling threshold and interference sensitivity
-  5. Tests validate tunneling enables "creative" retrieval that Jaccard/standard interference cannot reach
+  1. Retrieval is weighted by embeddedness/connections, NOT coherence
+  2. Coherence governs only malleability (how much surprise needed to change a pattern)
+  3. Low-coherence (crystallized) patterns are still easily retrievable if well-connected
+  4. High-coherence patterns can tunnel to weakly-related patterns (creative retrieval)
+  5. Tunneling strength is proportional to source pattern coherence
+  6. System-wide criticality parameter controls the order/chaos balance
+  7. Tests validate the new retrieval model and tunneling behavior
 **Plans**: TBD
 
 Plans:
-- [ ] 03-01: Implement tunneling mechanism
-- [ ] 03-02: Implement criticality parameter and tuning
-- [ ] 03-03: Tests for advanced dynamics
+- [ ] 03-01: Refactor retrieval to connection-weighted (fix coherence semantics)
+- [ ] 03-02: Implement tunneling mechanism
+- [ ] 03-03: Implement criticality parameter and tuning
+- [ ] 03-04: Tests for advanced dynamics
 
 ### Phase 4: Codebase Cleanup
 **Goal**: Fix determinism bugs in existing code
@@ -114,7 +117,7 @@ Plans:
   - Generalization: repeated exposure → shared concept with attributes
   - Inheritance: shared attributes stored efficiently, not duplicated
   - Exceptions: specific instances can override general patterns
-  - Certainty plasticity: high-coherence nodes hard to change, low-coherence easy
+  - Certainty plasticity: LOW-coherence (crystallized) nodes hard to change, HIGH-coherence (malleable) easy
   - Conditionals: "if X then Y" represented as connected nodes
   - Meta-relationships: analogies and reasoning about relationships
   - Provenance: tracking where knowledge was learned (when relevant)
@@ -135,7 +138,7 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 | 0. Documentation | 1/1 | Complete | 2026-01-31 |
 | 1. Coherence Foundation | 2/2 | Complete | 2026-02-01 |
 | 2. Coherence Effects | 3/3 | Complete | 2026-02-01 |
-| 3. Advanced Dynamics | 0/3 | Not started | - |
+| 3. Advanced Dynamics | 0/4 | Not started | - |
 | 4. Codebase Cleanup | 0/2 | Not started | - |
 | 5. Architecture Clarity | 0/3 | Not started | - |
 

@@ -207,6 +207,19 @@ Sleep-like mechanisms tune criticality: consolidation (NREM-like) stabilizes; ex
 
 ## Neural Implementation Connections
 
+### Synaptic Strength vs Plasticity
+
+The brain uses two distinct mechanisms that map to our coherence vs accessibility distinction:
+
+| Brain Mechanism | What It Governs | Our Analog |
+|-----------------|-----------------|------------|
+| **Synaptic strength** | How strongly activation spreads | Accessibility (emergent from embeddedness) |
+| **Synaptic plasticity** | How easily connections change | Coherence (explicit property) |
+
+These are related but not identical. Well-consolidated memories tend to be both strong (accessible) AND rigid (low plasticity). Metaplasticity—"the plasticity of plasticity"—governs how plastic a synapse is, separate from its strength. In our substrate, accessibility emerges from connection structure while coherence explicitly tracks malleability.
+
+**Design implication:** Retrieval should be weighted by **embeddedness/connections**, not coherence. Coherence governs only how much a pattern can change when faced with contradictory evidence. A crystallized fact (low coherence) should still be easily retrievable if well-connected.
+
 ### Backpropagating Action Potentials
 Neurons send signals backward into dendrites after firing:
 - Provides local phase reference for STDP
