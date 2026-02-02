@@ -248,6 +248,23 @@ Sparse activation, phase relationships, synchrony binding, entanglement, coheren
 
 ---
 
+## Eigenvalue Analysis for Validation
+
+Eigenvalues provide mathematical tools for analyzing and validating system behavior—not for runtime operations, but for understanding invariants, stability, and structure.
+
+| Analysis Target | What Eigenvalues Reveal |
+|-----------------|-------------------------|
+| Coherence dynamics | Stability—does the system settle or explode? |
+| Hebbian learning | Convergence—do associations reach stable fixed points? |
+| Entanglement graph | Connectivity, cluster structure, central patterns |
+| Phase-coupled patterns | Natural oscillation modes (eigenmodes) |
+
+**When to use:** Parameter tuning, proving stability before deployment, debugging unexpected behavior, detecting structural issues in memory over time.
+
+**Not needed for:** Runtime retrieval, binding/unbinding, storage—the core operations don't require eigenvalue computation.
+
+---
+
 ## Open Questions (Empirical)
 
 1. Does deep hierarchy emerge naturally?

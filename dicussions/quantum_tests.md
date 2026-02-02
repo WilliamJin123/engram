@@ -582,3 +582,74 @@ All four validation tests passed with strong margins:
 - Implement coherence dynamics (Test 4 from original plan)
 - Implement Coactivation learning (Test 5 from original plan)
 - Build text encoding and LLM integration (Tests 6-7)
+
+---
+
+## Eigenvalue-Based Validation (Future)
+
+Eigenvalue analysis for mathematical validation of system properties—diagnostic tools, not runtime components.
+
+### Test 8: Coherence Dynamics Stability
+
+**Goal:** Prove coherence decay/refresh settles into stable equilibrium.
+
+```python
+# Linearize coherence dynamics around equilibrium
+# dC/dt = -decay * C + refresh_rate
+# Eigenvalue λ = -decay_rate
+
+def test_coherence_stability(decay_rate, refresh_rate):
+    # System is stable if λ < 0 (eigenvalue negative)
+    eigenvalue = -decay_rate
+    assert eigenvalue < 0, "Coherence dynamics unstable"
+
+    # Equilibrium coherence
+    equilibrium = refresh_rate / decay_rate
+    assert 0 < equilibrium < 1, "Equilibrium outside valid range"
+```
+
+### Test 9: Entanglement Graph Spectral Analysis
+
+**Goal:** Validate memory structure through graph eigenvalues.
+
+```python
+def test_entanglement_structure(substrate):
+    # Build adjacency matrix from entanglements
+    A = build_adjacency_matrix(substrate.entanglements)
+
+    # Compute spectrum
+    eigenvalues = torch.linalg.eigvalsh(A)
+
+    # Algebraic connectivity (2nd smallest eigenvalue of Laplacian)
+    L = torch.diag(A.sum(dim=1)) - A
+    fiedler = torch.linalg.eigvalsh(L)[1]
+
+    assert fiedler > 0.01, "Memory graph poorly connected"
+
+    # Check for fragmentation (zero eigenvalues = disconnected components)
+    num_components = (eigenvalues.abs() < 1e-6).sum()
+    print(f"Disconnected memory clusters: {num_components}")
+```
+
+### Test 10: Coactivation (Hebbian) Convergence
+
+**Goal:** Verify bit-sharing converges to stable associations.
+
+```python
+def coactivation_convergence(patterns, iterations=100):
+    overlap_history = []
+
+    for i in range(iterations):
+        co_activate(patterns)
+        overlap = measure_average_overlap(patterns)
+        overlap_history.append(overlap)
+
+    # Check convergence (derivative approaches zero)
+    final_deltas = np.diff(overlap_history[-10:])
+    assert np.abs(final_deltas).max() < 0.01, "coactivation not converging"
+
+    # Check not collapsed (patterns still distinguishable)
+    assert overlap_history[-1] < 0.5, "Patterns collapsed to identical"
+```
+
+**When to run:** After parameter changes, before deployment, when debugging unexpected memory behavior.
