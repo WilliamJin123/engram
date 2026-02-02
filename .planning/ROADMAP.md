@@ -78,13 +78,13 @@ Plans:
   5. Tunneling strength is proportional to source pattern coherence
   6. System-wide criticality parameter controls the order/chaos balance
   7. Tests validate the new retrieval model and tunneling behavior
-**Plans**: TBD
+**Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 03-01: Refactor retrieval to connection-weighted (fix coherence semantics)
-- [ ] 03-02: Implement tunneling mechanism
-- [ ] 03-03: Implement criticality parameter and tuning
-- [ ] 03-04: Tests for advanced dynamics
+- [ ] 03-01-PLAN.md — Refactor retrieval to pure similarity + crystallization dynamics (COHR-08)
+- [ ] 03-02-PLAN.md — Implement tunneling mechanism (COHR-06)
+- [ ] 03-03-PLAN.md — Implement criticality parameter and self-adjustment (COHR-07)
+- [ ] 03-04-PLAN.md — Tests for advanced dynamics (TEST-05)
 
 ### Phase 4: Codebase Cleanup
 **Goal**: Fix determinism bugs in existing code
@@ -148,3 +148,4 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 *Phase 1 completed: 2026-02-01*
 *Phase 2 planned: 2026-02-01*
 *Phase 2 completed: 2026-02-01*
+*Phase 3 planned: 2026-02-01*
