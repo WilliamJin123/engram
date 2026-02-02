@@ -77,6 +77,8 @@ class TextEncoder:
     ):
         self.dim = dim
         self.k = k
+        if self.k < 10:
+            raise ValueError(f"k must be >= 10 for reliable encoding, got k={self.k}")
         self.config = config or EncodingConfig()
 
     def encode(
@@ -170,13 +172,13 @@ class TextEncoder:
 
     def _token_to_bits(self, token: str) -> set[int]:
         """Convert a token to a set of bit indices."""
-        base_hash = hashlib.sha256(token.encode()).hexdigest()
+        base_hash = hashlib.sha256(token.encode()).digest()  # bytes, not hex
         bits_per_token = max(1, self.k // 10)
 
         bits = set()
         for i in range(bits_per_token):
-            h = hashlib.sha256(f"{base_hash}:{i}".encode()).hexdigest()
-            bit_idx = int(h[:8], 16) % self.dim
+            h = hashlib.sha256(f"{token}:{i}".encode()).digest()  # bytes, not hex
+            bit_idx = int.from_bytes(h[:8], 'big') % self.dim  # Full 64 bits
             bits.add(bit_idx)
 
         return bits
@@ -218,17 +220,17 @@ class TextEncoder:
         # Use sorted tokens for padding hash to ensure same words = same bits
         tokens = self._tokenize(text)
         sorted_tokens = " ".join(sorted(set(tokens)))
-        text_hash = hashlib.sha256(sorted_tokens.encode()).hexdigest()
+        text_hash = hashlib.sha256(sorted_tokens.encode()).digest()  # bytes, not hex
         pad_idx = 0
 
         while len(bits) < self.k:
-            h = hashlib.sha256(f"{text_hash}:pad:{pad_idx}".encode()).hexdigest()
-            bit_idx = int(h[:8], 16) % self.dim
+            h = hashlib.sha256(f"{sorted_tokens}:pad:{pad_idx}".encode()).digest()  # bytes, not hex
+            bit_idx = int.from_bytes(h[:8], 'big') % self.dim  # Full 64 bits
 
             if bit_idx not in bits:
                 bits.add(bit_idx)
                 # Use a phase derived from the hash for padding bits
-                phase_hash = int(h[8:16], 16)
+                phase_hash = int.from_bytes(h[8:16], 'big')
                 phases[bit_idx] = (phase_hash % 1000) / 1000 * 2 * math.pi
 
             pad_idx += 1
