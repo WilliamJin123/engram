@@ -93,13 +93,13 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Coactivation produces identical bit transfers given same seed
   2. Running coactivation twice with same inputs and seed produces identical patterns
-  3. Text encoding at k=5 produces unique bit patterns for different single-word inputs
+  3. Text encoding at k=10 produces unique bit patterns for different single-word inputs (k < 10 rejected)
   4. All existing tests continue to pass
-**Plans**: TBD
+**Plans**: 2 plans in 1 wave (parallel)
 
 Plans:
-- [ ] 04-01: Add seeded RNG to coactivation
-- [ ] 04-02: Fix text encoding collision at small k
+- [ ] 04-01-PLAN.md — Add seeded RNG to coactivation (FIX-01)
+- [ ] 04-02-PLAN.md — Fix text encoding collision at small k (FIX-02)
 
 ### Phase 5: Architecture Clarity
 **Goal**: Clear separation between substrate and agentic layers; validate quantum memory hypothesis
@@ -139,7 +139,7 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 | 1. Coherence Foundation | 2/2 | Complete | 2026-02-01 |
 | 2. Coherence Effects | 3/3 | Complete | 2026-02-01 |
 | 3. Advanced Dynamics | 4/4 | Complete | 2026-02-02 |
-| 4. Codebase Cleanup | 0/2 | Not started | - |
+| 4. Codebase Cleanup | 0/2 | Planned | - |
 | 5. Architecture Clarity | 0/3 | Not started | - |
 
 ---
@@ -150,3 +150,4 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 *Phase 2 completed: 2026-02-01*
 *Phase 3 planned: 2026-02-01*
 *Phase 3 completed: 2026-02-02*
+*Phase 4 planned: 2026-02-02*
