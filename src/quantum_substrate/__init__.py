@@ -13,6 +13,12 @@ from quantum_substrate.surprise import (
     SurpriseResult,
     compute_surprise_magnitude,
 )
+from quantum_substrate.tunneling import (
+    TunnelingConfig,
+    TunnelingResult,
+    CreativeModeTracker,
+    attempt_tunneling,
+)
 
 __version__ = "0.1.0"
 __all__ = [
@@ -28,4 +34,8 @@ __all__ = [
     "SurpriseDetector",
     "SurpriseResult",
     "compute_surprise_magnitude",
+    "TunnelingConfig",
+    "TunnelingResult",
+    "CreativeModeTracker",
+    "attempt_tunneling",
 ]
