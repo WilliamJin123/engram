@@ -47,6 +47,8 @@ class EvolvingPattern:
     coherence: float = 1.0
     last_access_tick: int = 0
     connection_count: int = 0
+    last_modified_tick: int = 0
+    access_count_since_modification: int = 0
 
     @classmethod
     def from_encoded(cls, encoded: "EncodedPattern") -> EvolvingPattern:
@@ -63,6 +65,8 @@ class EvolvingPattern:
             coherence=1.0,
             last_access_tick=0,
             connection_count=0,
+            last_modified_tick=0,
+            access_count_since_modification=0,
         )
 
     @classmethod
@@ -133,3 +137,35 @@ class EvolvingPattern:
     def clamp_coherence(self, floor: float = 0.01) -> None:
         """Ensure coherence stays within valid bounds."""
         self.coherence = max(floor, min(1.0, self.coherence))
+
+    @property
+    def stability_score(self) -> float:
+        """Stability score for crystallization dynamics.
+
+        Based on access_count_since_modification:
+        - 0 accesses = 0.0 (just modified, fully malleable)
+        - 10+ accesses = 1.0 (stable, crystallizes faster)
+
+        Higher stability = pattern hasn't changed despite repeated access,
+        so it should crystallize (coherence decays faster).
+        """
+        return min(1.0, self.access_count_since_modification / 10.0)
+
+    def mark_modified(self, tick: int) -> None:
+        """Mark pattern as modified at given tick.
+
+        Resets stability tracking since pattern bits have changed.
+
+        Args:
+            tick: Current global tick when modification occurred.
+        """
+        self.last_modified_tick = tick
+        self.access_count_since_modification = 0
+
+    def record_access(self) -> None:
+        """Record an access without modification.
+
+        Increments access counter for stability tracking.
+        Call this when pattern is retrieved/used but not modified.
+        """
+        self.access_count_since_modification += 1
