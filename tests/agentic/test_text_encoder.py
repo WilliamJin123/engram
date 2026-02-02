@@ -3,7 +3,7 @@
 
 import pytest
 import math
-from agentic.text_encoder import TextEncoder, EncodingConfig
+from agentic.text_encoder import TextEncoder, EncodingConfig, EncodedPattern
 
 
 class TestTextEncoderDeterminism:
@@ -122,3 +122,98 @@ class TestEncodingConfigOptions:
         overlap = len(p1.bits & p2.bits) / len(p1.bits | p2.bits)
 
         assert overlap > 0
+
+
+class TestTextEncoderValidation:
+    """Test input validation."""
+
+    def test_k_minimum_enforced(self):
+        """k < 10 should raise ValueError."""
+        with pytest.raises(ValueError, match="k must be >= 10"):
+            TextEncoder(dim=1024, k=5)
+
+        with pytest.raises(ValueError, match="k must be >= 10"):
+            TextEncoder(dim=1024, k=9)
+
+    def test_k_at_minimum_works(self):
+        """k = 10 should work."""
+        encoder = TextEncoder(dim=1024, k=10)
+        pattern = encoder.encode("test")
+        assert len(pattern.bits) == 10
+
+
+class TestTextEncoderCollisions:
+    """Test hash collision resistance."""
+
+    def test_no_collisions_medium_corpus(self):
+        """100+ unique words should produce 100+ unique patterns."""
+        encoder = TextEncoder(dim=1024, k=10)
+
+        # Common English words - all unique
+        words = [
+            "apple", "banana", "cherry", "date", "elderberry",
+            "fig", "grape", "honeydew", "imbe", "jackfruit",
+            "kiwi", "lemon", "mango", "nectarine", "orange",
+            "papaya", "quince", "raspberry", "strawberry", "tangerine",
+            "ugli", "vanilla", "watermelon", "ximenia", "yuzu",
+            "dog", "cat", "bird", "fish", "horse",
+            "elephant", "tiger", "lion", "bear", "wolf",
+            "fox", "rabbit", "deer", "mouse", "rat",
+            "snake", "lizard", "frog", "turtle", "whale",
+            "dolphin", "shark", "octopus", "crab", "lobster",
+            "red", "blue", "green", "yellow", "purple",
+            "color", "pink", "brown", "black", "white",
+            "gray", "silver", "gold", "bronze", "copper",
+            "run", "walk", "jump", "swim", "fly",
+            "eat", "drink", "sleep", "wake", "think",
+            "talk", "listen", "watch", "read", "write",
+            "happy", "sad", "angry", "scared", "excited",
+            "tired", "hungry", "thirsty", "cold", "hot",
+            "big", "small", "tall", "short", "wide",
+            "narrow", "thick", "thin", "heavy", "light",
+            "house", "car", "tree", "flower", "mountain",
+            "river", "ocean", "lake", "forest", "desert",
+        ]
+
+        # Encode all words
+        patterns = {word: encoder.encode(word) for word in words}
+
+        # Check for bit-set collisions (identical bit patterns)
+        bit_sets = {}
+        collisions = []
+        for word, pattern in patterns.items():
+            bit_tuple = tuple(sorted(pattern.bits))
+            if bit_tuple in bit_sets:
+                collisions.append((word, bit_sets[bit_tuple]))
+            else:
+                bit_sets[bit_tuple] = word
+
+        assert len(collisions) == 0, f"Found collisions: {collisions}"
+
+    def test_single_char_difference_distinct(self):
+        """Words differing by one char should produce distinct patterns."""
+        encoder = TextEncoder(dim=1024, k=50)
+
+        pairs = [
+            ("cat", "bat"),
+            ("dog", "log"),
+            ("run", "sun"),
+            ("hot", "pot"),
+        ]
+
+        for word1, word2 in pairs:
+            p1 = encoder.encode(word1)
+            p2 = encoder.encode(word2)
+            # They should share some bits (similar words) but not be identical
+            assert p1.bits != p2.bits, f"{word1} and {word2} should differ"
+
+    def test_deterministic_encoding(self):
+        """Same text always produces same pattern."""
+        encoder = TextEncoder(dim=1024, k=50)
+
+        text = "the quick brown fox"
+        p1 = encoder.encode(text)
+        p2 = encoder.encode(text)
+
+        assert p1.bits == p2.bits
+        assert p1.phases == p2.phases
