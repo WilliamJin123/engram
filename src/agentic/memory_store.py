@@ -110,6 +110,10 @@ class MemoryStore:
     ) -> list[RetrievalResult]:
         """Retrieve patterns similar to query.
 
+        NOTE: This method uses coherence weighting for interference method.
+        For Phase 3 semantics where coherence = malleability (not accessibility),
+        use retrieve_pure_similarity() instead.
+
         Operation order:
         1. Advance tick
         2. Decay all patterns
@@ -270,6 +274,91 @@ class MemoryStore:
         results.sort(key=lambda r: -r.score)
         return results[:top_k]
 
+    def retrieve_pure_similarity(
+        self,
+        query: str,
+        top_k: int = 10,
+        use_evolved: bool = True,
+        recency_boost: float = 0.0,
+    ) -> list[RetrievalResult]:
+        """Retrieve using pure similarity - coherence does NOT affect ranking.
+
+        This is the Phase 3 semantics where coherence = malleability, not accessibility.
+        Low-coherence (crystallized) patterns are just as retrievable as high-coherence.
+
+        Design note: The ROADMAP mentions "weighted by embeddedness/connections" but
+        this was refined during phase discussion. Per CONTEXT.md: "Remove embeddedness
+        from explicit weighting - connectivity naturally affects retrieval through
+        network pathways" and "Pure similarity (bit overlap) as primary retrieval
+        mechanism". Well-connected patterns surface naturally through the connection
+        network; explicit embeddedness weighting is not needed.
+
+        Operation order:
+        1. Advance tick
+        2. Decay all patterns
+        3. Compute pure Jaccard similarity for each pattern
+        4. Optionally blend with recency factor
+        5. Refresh retrieved patterns proportional to score
+
+        Args:
+            query: Query text.
+            top_k: Number of results.
+            use_evolved: Use evolved bits (with acquired bits from coactivation).
+            recency_boost: Optional recency factor (0-1). If >0, final score is:
+                (1-boost)*similarity + boost*recency_factor
+                where recency_factor = 1.0 / (1.0 + age_ticks)
+
+        Returns:
+            List of RetrievalResult sorted by score descending.
+        """
+        # Advance tick for this operation
+        self.coherence_manager.advance_tick()
+
+        # Decay all patterns first
+        self.coherence_manager.decay_all(self.patterns.values())
+
+        if not self.patterns:
+            return []
+
+        # Create query pattern
+        query_pattern = EvolvingPattern.from_text(query, dim=self.dim, k=self.k)
+        query_bits = query_pattern.bits if use_evolved else set(query_pattern.original_bits)
+
+        current_tick = self.coherence_manager.current_tick
+
+        results = []
+        for pattern_id, pattern in self.patterns.items():
+            pattern_bits = pattern.bits if use_evolved else set(pattern.original_bits)
+
+            # Pure Jaccard similarity
+            intersection = len(query_bits & pattern_bits)
+            union = len(query_bits | pattern_bits)
+            similarity = intersection / union if union > 0 else 0.0
+
+            # Optional recency blending
+            if recency_boost > 0:
+                age_ticks = current_tick - pattern.last_access_tick
+                recency_factor = 1.0 / (1.0 + age_ticks)
+                score = (1 - recency_boost) * similarity + recency_boost * recency_factor
+            else:
+                score = similarity
+
+            results.append(RetrievalResult(
+                pattern_id=pattern_id,
+                pattern=pattern,
+                score=score,
+            ))
+
+        # Sort by score descending
+        results.sort(key=lambda r: -r.score)
+        results = results[:top_k]
+
+        # Refresh retrieved patterns proportional to score
+        for result in results:
+            self.coherence_manager.apply_refresh(result.pattern, activation_strength=result.score)
+
+        return results
+
     def get_effective_coherence(self, pattern_id: str) -> float | None:
         """Get pattern's current coherence after decay.
 
@@ -303,13 +392,14 @@ class MemoryStore:
         use_evolved: bool = True,
         coherence_exponent: float = 1.0,
         boost_coefficient: float = 0.5,
+        use_pure_similarity: bool = False,
     ) -> tuple[list[RetrievalResult], SurpriseResult | None]:
         """Retrieve with automatic surprise detection and re-coherence.
 
         This is the full coherence-aware retrieval flow:
         1. Advance tick, decay all patterns
         2. Build expectation (which patterns we expect to match)
-        3. Retrieve using coherence-weighted method
+        3. Retrieve using selected method
         4. Detect surprise (expected vs actual mismatch)
         5. Apply re-coherence to involved patterns
         6. Apply normal refresh to retrieved patterns
@@ -318,9 +408,13 @@ class MemoryStore:
             query: Query text.
             top_k: Number of results.
             method: Retrieval method ("interference" recommended for coherence effects).
+                Ignored if use_pure_similarity=True.
             use_evolved: Use evolved bits (with acquired).
             coherence_exponent: Power for coherence weighting.
+                Ignored if use_pure_similarity=True.
             boost_coefficient: Surprise-to-coherence conversion factor.
+            use_pure_similarity: If True, use retrieve_pure_similarity semantics
+                (Phase 3: coherence = malleability, not accessibility).
 
         Returns:
             Tuple of (results, surprise_result). surprise_result is None if no patterns.
@@ -346,7 +440,10 @@ class MemoryStore:
         )
 
         # Step 5: Retrieve using appropriate method
-        if method == "jaccard":
+        if use_pure_similarity:
+            # Pure similarity: coherence does NOT affect ranking
+            results = self._retrieve_pure_similarity_internal(query_pattern, top_k, use_evolved)
+        elif method == "jaccard":
             results = self._retrieve_jaccard(query_pattern, top_k, use_evolved)
         else:
             results = self._retrieve_interference(
@@ -380,3 +477,33 @@ class MemoryStore:
             self.coherence_manager.apply_refresh(result.pattern, activation_strength=result.score)
 
         return results, surprise_result
+
+    def _retrieve_pure_similarity_internal(
+        self,
+        query: EvolvingPattern,
+        top_k: int,
+        use_evolved: bool,
+    ) -> list[RetrievalResult]:
+        """Internal pure similarity retrieval (no tick advance/decay).
+
+        Used by retrieve_with_surprise when use_pure_similarity=True.
+        """
+        query_bits = query.bits if use_evolved else set(query.original_bits)
+
+        results = []
+        for pattern_id, pattern in self.patterns.items():
+            pattern_bits = pattern.bits if use_evolved else set(pattern.original_bits)
+
+            # Pure Jaccard similarity
+            intersection = len(query_bits & pattern_bits)
+            union = len(query_bits | pattern_bits)
+            score = intersection / union if union > 0 else 0.0
+
+            results.append(RetrievalResult(
+                pattern_id=pattern_id,
+                pattern=pattern,
+                score=score,
+            ))
+
+        results.sort(key=lambda r: -r.score)
+        return results[:top_k]
