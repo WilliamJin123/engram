@@ -14,9 +14,9 @@ Requirements for completing coherence dynamics and establishing clean architectu
 - [x] **COHR-03**: Accessing a pattern refreshes its coherence
 - [x] **COHR-04**: Surprise/contradiction re-coheres decayed patterns
 - [x] **COHR-05**: Interference strength is modulated by pattern coherence
-- [ ] **COHR-06**: High-coherence patterns can tunnel to weakly-related patterns
-- [ ] **COHR-07**: System-wide criticality parameter tunes order vs chaos balance
-- [ ] **COHR-08**: Retrieval weighted by embeddedness (coherence = malleability, not accessibility)
+- [x] **COHR-06**: High-coherence patterns can tunnel to weakly-related patterns
+- [x] **COHR-07**: System-wide criticality parameter tunes order vs chaos balance
+- [x] **COHR-08**: Retrieval weighted by embeddedness (coherence = malleability, not accessibility)
 
 ### Validation Tests
 
@@ -24,13 +24,13 @@ Requirements for completing coherence dynamics and establishing clean architectu
 - [x] **TEST-02**: Tests validate coherence refresh on access
 - [x] **TEST-03**: Tests validate surprise-triggered re-coherence
 - [x] **TEST-04**: Tests validate coherence-modulated interference produces better retrieval
-- [ ] **TEST-05**: Tests validate tunneling enables creative/exploratory activation
+- [x] **TEST-05**: Tests validate tunneling enables creative/exploratory activation
 - [ ] **TEST-06**: Tests are designed to validate OR invalidate quantum memory hypothesis
 
 ### Codebase Cleanup
 
-- [ ] **FIX-01**: Coactivation uses seeded RNG for deterministic bit transfer
-- [ ] **FIX-02**: Text encoding prevents token collisions at small k values
+- [x] **FIX-01**: Coactivation uses seeded RNG for deterministic bit transfer
+- [x] **FIX-02**: Text encoding prevents token collisions at small k values
 
 ### Architecture Clarity
 
@@ -93,12 +93,12 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | COHR-05 | Phase 2 | Complete |
 | TEST-03 | Phase 2 | Complete |
 | TEST-04 | Phase 2 | Complete |
-| COHR-08 | Phase 3 | Pending |
-| COHR-06 | Phase 3 | Pending |
-| COHR-07 | Phase 3 | Pending |
-| TEST-05 | Phase 3 | Pending |
-| FIX-01 | Phase 4 | Pending |
-| FIX-02 | Phase 4 | Pending |
+| COHR-08 | Phase 3 | Complete |
+| COHR-06 | Phase 3 | Complete |
+| COHR-07 | Phase 3 | Complete |
+| TEST-05 | Phase 3 | Complete |
+| FIX-01 | Phase 4 | Complete |
+| FIX-02 | Phase 4 | Complete |
 | ARCH-01 | Phase 5 | Pending |
 | ARCH-02 | Phase 5 | Pending |
 | ARCH-03 | Phase 5 | Pending |
@@ -111,4 +111,4 @@ Deferred to future milestone. Tracked but not in current roadmap.
 
 ---
 *Requirements defined: 2026-01-31*
-*Last updated: 2026-02-01 after Phase 2 completion*
+*Last updated: 2026-02-01 after Phase 4 completion*

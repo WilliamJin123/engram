@@ -14,7 +14,7 @@ This milestone implements coherence dynamics for the quantum-inspired memory sub
 - [x] **Phase 1: Coherence Foundation** - Core coherence field with decay and refresh
 - [x] **Phase 2: Coherence Effects** - Surprise re-coherence and interference modulation
 - [x] **Phase 3: Advanced Dynamics** - Tunneling and criticality tuning
-- [ ] **Phase 4: Codebase Cleanup** - Determinism fixes (parallel track)
+- [x] **Phase 4: Codebase Cleanup** - Determinism fixes (parallel track)
 - [ ] **Phase 5: Architecture Clarity** - Substrate/agentic separation and hypothesis validation
 
 ## Phase Details
@@ -98,8 +98,8 @@ Plans:
 **Plans**: 2 plans in 1 wave (parallel)
 
 Plans:
-- [ ] 04-01-PLAN.md — Add seeded RNG to coactivation (FIX-01)
-- [ ] 04-02-PLAN.md — Fix text encoding collision at small k (FIX-02)
+- [x] 04-01-PLAN.md — Add seeded RNG to coactivation (FIX-01)
+- [x] 04-02-PLAN.md — Fix text encoding collision at small k (FIX-02)
 
 ### Phase 5: Architecture Clarity
 **Goal**: Clear separation between substrate and agentic layers; validate quantum memory hypothesis
@@ -139,7 +139,7 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 | 1. Coherence Foundation | 2/2 | Complete | 2026-02-01 |
 | 2. Coherence Effects | 3/3 | Complete | 2026-02-01 |
 | 3. Advanced Dynamics | 4/4 | Complete | 2026-02-02 |
-| 4. Codebase Cleanup | 0/2 | Planned | - |
+| 4. Codebase Cleanup | 2/2 | Complete | 2026-02-01 |
 | 5. Architecture Clarity | 0/3 | Not started | - |
 
 ---
@@ -151,3 +151,4 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 *Phase 3 planned: 2026-02-01*
 *Phase 3 completed: 2026-02-02*
 *Phase 4 planned: 2026-02-02*
+*Phase 4 completed: 2026-02-01*
