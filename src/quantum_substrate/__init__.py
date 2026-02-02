@@ -19,6 +19,7 @@ from quantum_substrate.tunneling import (
     CreativeModeTracker,
     attempt_tunneling,
 )
+from quantum_substrate.criticality import CriticalityConfig, CriticalityState
 
 __version__ = "0.1.0"
 __all__ = [
@@ -38,4 +39,6 @@ __all__ = [
     "TunnelingResult",
     "CreativeModeTracker",
     "attempt_tunneling",
+    "CriticalityConfig",
+    "CriticalityState",
 ]
