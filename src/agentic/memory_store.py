@@ -665,6 +665,7 @@ class MemoryStore:
                 connections=self.connection_map,
                 config=self.tunneling_config,
                 creative_mode=creative_mode,
+                criticality_amplification=self.criticality.tunneling_amplification,
             )
             all_tunnel_results.append(tunnel_result)
 

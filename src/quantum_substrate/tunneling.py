@@ -87,6 +87,7 @@ def attempt_tunneling(
     connections: dict[str, set[str]],  # pattern_id -> connected pattern IDs
     config: TunnelingConfig,
     creative_mode: bool = False,
+    criticality_amplification: float = 1.0,  # From CriticalityState
     rng: random.Random | None = None,  # For deterministic testing
 ) -> TunnelingResult:
     """Attempt tunneling from source to a weakly-related connected pattern.
@@ -97,6 +98,12 @@ def attempt_tunneling(
 
     This creates associative leaps - activating dissimilar but connected patterns.
 
+    Probability calculation:
+        base_prob = baseline_probability * (coherence ^ exponent)
+        if creative_mode: base_prob *= creative_mode_multiplier
+        base_prob *= criticality_amplification
+        clamp to [0, 1]
+
     Args:
         source: The pattern attempting to tunnel.
         source_id: ID of the source pattern.
@@ -104,6 +111,10 @@ def attempt_tunneling(
         connections: Map of pattern_id -> set of connected pattern IDs.
         config: Tunneling configuration.
         creative_mode: If True, amplify tunneling probability.
+        criticality_amplification: Multiplier from system criticality state.
+            - 0.5 at criticality 0.0 (rigid system, less tunneling)
+            - 1.0 at criticality 0.5 (edge of chaos, normal tunneling)
+            - 1.5 at criticality 1.0 (chaotic system, more tunneling)
         rng: Optional Random instance for deterministic testing.
 
     Returns:
@@ -165,8 +176,12 @@ def attempt_tunneling(
     tunnel_strength = source.coherence ** config.coherence_exponent
     probability = config.baseline_probability * tunnel_strength
 
+    # Apply creative mode multiplier
     if creative_mode:
         probability *= config.creative_mode_multiplier
+
+    # Apply criticality amplification
+    probability *= criticality_amplification
 
     # Clamp probability to [0, 1]
     probability = max(0.0, min(1.0, probability))
