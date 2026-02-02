@@ -1,6 +1,8 @@
 # tests/agentic/test_coactivation.py
 """Tests for coactivation-based associative learning."""
 
+import random
+
 import pytest
 from agentic.evolving_pattern import EvolvingPattern
 from agentic.coactivation import coactivate, CoactivationConfig
@@ -99,3 +101,58 @@ class TestCoactivationBasics:
 
         assert small_gained >= large_gained, \
             f"Small pattern should gain more: small={small_gained}, large={large_gained}"
+
+
+class TestCoactivationDeterminism:
+    """Test deterministic coactivation with seeded RNG."""
+
+    def test_deterministic_with_seed(self):
+        """Same seed produces identical results."""
+        p1a = EvolvingPattern.from_text("determinism test one", dim=1024, k=50)
+        p2a = EvolvingPattern.from_text("determinism test two", dim=1024, k=50)
+
+        p1b = EvolvingPattern.from_text("determinism test one", dim=1024, k=50)
+        p2b = EvolvingPattern.from_text("determinism test two", dim=1024, k=50)
+
+        # Run with same seed
+        rng_a = random.Random(42)
+        rng_b = random.Random(42)
+
+        coactivate([p1a, p2a], strength=0.1, rng=rng_a)
+        coactivate([p1b, p2b], strength=0.1, rng=rng_b)
+
+        assert p1a.bits == p1b.bits, "Same seed should produce identical p1 bits"
+        assert p2a.bits == p2b.bits, "Same seed should produce identical p2 bits"
+        assert p1a.acquired_bits == p1b.acquired_bits
+
+    def test_different_seeds_differ(self):
+        """Different seeds produce different results (usually)."""
+        p1a = EvolvingPattern.from_text("seed test alpha", dim=1024, k=50)
+        p2a = EvolvingPattern.from_text("seed test beta", dim=1024, k=50)
+
+        p1b = EvolvingPattern.from_text("seed test alpha", dim=1024, k=50)
+        p2b = EvolvingPattern.from_text("seed test beta", dim=1024, k=50)
+
+        rng_a = random.Random(42)
+        rng_b = random.Random(999)
+
+        coactivate([p1a, p2a], strength=0.1, rng=rng_a)
+        coactivate([p1b, p2b], strength=0.1, rng=rng_b)
+
+        # With different seeds, at least one pattern should differ
+        # (could technically be same by chance, but extremely unlikely)
+        differs = (p1a.bits != p1b.bits) or (p2a.bits != p2b.bits)
+        assert differs, "Different seeds should (usually) produce different results"
+
+    def test_no_seed_is_stochastic(self):
+        """Without seed, results vary between runs."""
+        results = []
+        for _ in range(5):
+            p1 = EvolvingPattern.from_text("stochastic one", dim=1024, k=50)
+            p2 = EvolvingPattern.from_text("stochastic two", dim=1024, k=50)
+            coactivate([p1, p2], strength=0.1)  # No rng = uses global random
+            results.append(frozenset(p1.bits))
+
+        # Not all results should be identical (stochastic behavior)
+        unique_results = len(set(results))
+        assert unique_results > 1, "Without seed, results should vary"
