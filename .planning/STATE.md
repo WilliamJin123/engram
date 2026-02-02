@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-31)
 ## Current Position
 
 Phase: 3 of 5 (Advanced Dynamics)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-02 — Completed 03-01-PLAN.md (Crystallization Dynamics)
+Last activity: 2026-02-02 - Completed 03-02-PLAN.md (Tunneling Mechanics)
 
-Progress: [#######░░░] 54% (7/13 plans complete)
+Progress: [########░░] 62% (8/13 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 8 min
-- Total execution time: 51 min
+- Total plans completed: 8
+- Average duration: 7 min
+- Total execution time: 56 min
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [#######░░░] 54% (7/13 plans complete)
 | 0. Documentation | 1 | - | - |
 | 1. Coherence Foundation | 2 | 17 min | 9 min |
 | 2. Coherence Effects | 3 | 30 min | 10 min |
-| 3. Advanced Dynamics | 1 | 4 min | 4 min |
+| 3. Advanced Dynamics | 2 | 9 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: [01-02, 02-01, 02-02, 02-03, 03-01]
+- Last 5 plans: [02-01, 02-02, 02-03, 03-01, 03-02]
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -62,6 +62,10 @@ Recent decisions affecting current work:
 - [03-01]: Crystallization multiplier = 1.0 + factor * stability
 - [03-01]: Re-coherence scaled by coherence (malleability) with min_delta=0.01 floor
 - [03-01]: Pure similarity retrieval uses Jaccard only - no embeddedness weighting
+- [03-02]: Baseline tunneling probability 0.1, creative mode multiplier 3.0
+- [03-02]: Min source coherence 0.3 for tunneling initiation
+- [03-02]: Max bit overlap 0.2 for tunnel targets (weakly related)
+- [03-02]: Auto-creative triggers after 3 consecutive scores < 0.3
 
 ### Pending Todos
 
@@ -77,7 +81,7 @@ From CONCERNS.md analysis:
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 03-01-PLAN.md (Crystallization Dynamics)
+Stopped at: Completed 03-02-PLAN.md (Tunneling Mechanics)
 Resume file: None
 
 ---
