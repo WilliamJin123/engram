@@ -12,7 +12,7 @@ This milestone implements coherence dynamics for the quantum-inspired memory sub
 
 - [x] **Phase 0: Documentation** - Project planning artifacts (DOC-01, DOC-02, DOC-03, DOC-04)
 - [x] **Phase 1: Coherence Foundation** - Core coherence field with decay and refresh
-- [ ] **Phase 2: Coherence Effects** - Surprise re-coherence and interference modulation
+- [x] **Phase 2: Coherence Effects** - Surprise re-coherence and interference modulation
 - [ ] **Phase 3: Advanced Dynamics** - Tunneling and criticality tuning
 - [ ] **Phase 4: Codebase Cleanup** - Determinism fixes (parallel track)
 - [ ] **Phase 5: Architecture Clarity** - Substrate/agentic separation and hypothesis validation
@@ -62,9 +62,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Coherence-weighted interference retrieval (COHR-05, TEST-04)
-- [ ] 02-02-PLAN.md — Surprise detection module and re-coherence method (COHR-04 foundation)
-- [ ] 02-03-PLAN.md — Surprise integration and re-coherence tests (COHR-04, TEST-03)
+- [x] 02-01-PLAN.md — Coherence-weighted interference retrieval (COHR-05, TEST-04)
+- [x] 02-02-PLAN.md — Surprise detection module and re-coherence method (COHR-04 foundation)
+- [x] 02-03-PLAN.md — Surprise integration and re-coherence tests (COHR-04, TEST-03)
 
 ### Phase 3: Advanced Dynamics
 **Goal**: High-coherence patterns can tunnel to weakly-related patterns; system has criticality tuning
@@ -134,7 +134,7 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 |-------|----------------|--------|-----------|
 | 0. Documentation | 1/1 | Complete | 2026-01-31 |
 | 1. Coherence Foundation | 2/2 | Complete | 2026-02-01 |
-| 2. Coherence Effects | 0/3 | Planned | - |
+| 2. Coherence Effects | 3/3 | Complete | 2026-02-01 |
 | 3. Advanced Dynamics | 0/3 | Not started | - |
 | 4. Codebase Cleanup | 0/2 | Not started | - |
 | 5. Architecture Clarity | 0/3 | Not started | - |
@@ -144,3 +144,4 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 *Phase 1 planned: 2026-02-01*
 *Phase 1 completed: 2026-02-01*
 *Phase 2 planned: 2026-02-01*
+*Phase 2 completed: 2026-02-01*
