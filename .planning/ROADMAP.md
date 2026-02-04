@@ -15,7 +15,7 @@ This milestone implements coherence dynamics for the quantum-inspired memory sub
 - [x] **Phase 2: Coherence Effects** - Surprise re-coherence and interference modulation
 - [x] **Phase 3: Advanced Dynamics** - Tunneling and criticality tuning
 - [x] **Phase 4: Codebase Cleanup** - Determinism fixes (parallel track)
-- [ ] **Phase 5: Architecture Clarity** - Substrate/agentic separation and hypothesis validation
+- [x] **Phase 5: Architecture Clarity** - Substrate/agentic separation and hypothesis validation
 
 ## Phase Details
 
@@ -124,9 +124,9 @@ Plans:
   - History: how understandings change over time and why
 
 Plans:
-- [ ] 05-01-PLAN.md — Create SubstratePattern protocol and refactor substrate for LLM-independence
-- [ ] 05-02-PLAN.md — Set up hypothesis test infrastructure (deps, fixtures, baselines)
-- [ ] 05-03-PLAN.md — Create hypothesis validation test suite (including INTUITION.md tests)
+- [x] 05-01-PLAN.md — Create SubstratePattern protocol and refactor substrate for LLM-independence
+- [x] 05-02-PLAN.md — Set up hypothesis test infrastructure (deps, fixtures, baselines)
+- [x] 05-03-PLAN.md — Create hypothesis validation test suite (including INTUITION.md tests)
 
 ## Progress
 
@@ -140,7 +140,7 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 | 2. Coherence Effects | 3/3 | Complete | 2026-02-01 |
 | 3. Advanced Dynamics | 4/4 | Complete | 2026-02-02 |
 | 4. Codebase Cleanup | 2/2 | Complete | 2026-02-01 |
-| 5. Architecture Clarity | 0/3 | Planned | - |
+| 5. Architecture Clarity | 3/3 | Complete | 2026-02-04 |
 
 ---
 *Roadmap created: 2026-01-31*
@@ -153,3 +153,5 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 *Phase 4 planned: 2026-02-02*
 *Phase 4 completed: 2026-02-01*
 *Phase 5 planned: 2026-02-04*
+*Phase 5 completed: 2026-02-04*
+*MILESTONE COMPLETE: 2026-02-04*
