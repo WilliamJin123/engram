@@ -268,3 +268,70 @@ def inject_noise(
         clutter_ids=clutter_ids,
         config=config,
     )
+
+
+@pytest.fixture
+def noisy_memory():
+    """Factory fixture for creating noisy memory scenarios.
+
+    Returns a function that creates a MemoryStore with targets and noise.
+    This supports both:
+    - Fresh memory creation with noise (default)
+    - Injecting noise into existing memory (use inject_noise directly)
+
+    Usage:
+        def test_retrieval_under_noise(noisy_memory):
+            store, target_ids, result = noisy_memory(
+                ["quick brown fox", "lazy dog"],
+                level=NoiseLevel.HIGH
+            )
+            # Test retrieval against noisy memory
+
+    The returned tuple contains:
+        - store: MemoryStore with targets and noise patterns
+        - target_ids: List of pattern IDs for the target texts
+        - noise_result: NoiseResult with IDs of all created noise patterns
+    """
+
+    def _create_noisy_memory(
+        target_texts: list[str],
+        level: NoiseLevel = NoiseLevel.MEDIUM,
+        config: NoiseConfig | None = None,
+        seed: int = 42,
+        dim: int = 1024,
+        k: int = 50,
+    ) -> tuple[MemoryStore, list[str], NoiseResult]:
+        """Create a MemoryStore with target patterns and noise.
+
+        Args:
+            target_texts: List of texts to store as target patterns.
+            level: NoiseLevel preset (used if config is None).
+            config: Optional custom NoiseConfig (overrides level).
+            seed: RNG seed for reproducibility (used if config is None).
+            dim: Pattern dimensionality.
+            k: Sparsity (active bits per pattern).
+
+        Returns:
+            Tuple of (store, target_ids, noise_result):
+            - store: MemoryStore with all patterns
+            - target_ids: List of IDs for target patterns
+            - noise_result: NoiseResult with noise pattern IDs
+        """
+        # Create config from preset if not provided
+        if config is None:
+            config = NoiseConfig.from_preset(level, seed=seed)
+
+        # Create store and add targets
+        store = MemoryStore(dim=dim, k=k)
+        target_ids: list[str] = []
+
+        for text in target_texts:
+            tid = store.store(text)
+            target_ids.append(tid)
+
+        # Inject noise
+        noise_result = inject_noise(store, target_ids, config)
+
+        return store, target_ids, noise_result
+
+    return _create_noisy_memory
