@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-31)
 ## Current Position
 
 Phase: 5 of 5 (Architecture Clarity)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-04 - Completed 05-01-PLAN.md (SubstratePattern Protocol)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-04 - Completed 05-02-PLAN.md (Hypothesis Test Infrastructure)
 
-Progress: [#############] 100% (13/13 plans complete)
+Progress: [##############] 100% (14/14 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 14
 - Average duration: 8 min
-- Total execution time: 101 min
+- Total execution time: 109 min
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [#############] 100% (13/13 plans complete)
 | 2. Coherence Effects | 3 | 30 min | 10 min |
 | 3. Advanced Dynamics | 4 | 25 min | 6 min |
 | 4. Codebase Cleanup | 2 | 16 min | 8 min |
-| 5. Architecture Clarity | 1 | 13 min | 13 min |
+| 5. Architecture Clarity | 2 | 21 min | 11 min |
 
 **Recent Trend:**
-- Last 5 plans: [03-04, 04-01, 04-02, 05-01]
-- Trend: Consistent, Phase 5 plan 1 complete
+- Last 5 plans: [04-01, 04-02, 05-01, 05-02]
+- Trend: Phase 5 complete
 
 *Updated after each plan completion*
 
@@ -78,6 +78,9 @@ Recent decisions affecting current work:
 - [04-02]: Minimum k=10 enforced at TextEncoder initialization
 - [05-01]: SubstratePattern protocol with @runtime_checkable for isinstance() support
 - [05-01]: Structural subtyping - EvolvingPattern satisfies protocol without explicit inheritance
+- [05-02]: N_TRIALS = 50 default for statistical tests (balance power vs CI speed)
+- [05-02]: Welch's t-test (not Student's) - no equal variance assumption
+- [05-02]: Cohen's d via pingouin - handles edge cases properly
 
 ### Pending Todos
 
@@ -93,7 +96,7 @@ From CONCERNS.md analysis:
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 05-01-PLAN.md (SubstratePattern Protocol)
+Stopped at: Completed 05-02-PLAN.md (Hypothesis Test Infrastructure)
 Resume file: None
 
 ---
