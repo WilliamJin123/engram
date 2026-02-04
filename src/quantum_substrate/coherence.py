@@ -15,8 +15,9 @@ import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Sequence
 
+from quantum_substrate.protocols import SubstratePattern
+
 if TYPE_CHECKING:
-    from agentic.evolving_pattern import EvolvingPattern
     from quantum_substrate.surprise import SurpriseResult
 
 
@@ -62,7 +63,7 @@ class CoherenceManager:
 
     def compute_decayed_coherence(
         self,
-        pattern: "EvolvingPattern",
+        pattern: "SubstratePattern",
         stability_score: float | None = None,
     ) -> float:
         """Compute what pattern's coherence would be after decay.
@@ -97,7 +98,7 @@ class CoherenceManager:
 
     def apply_decay(
         self,
-        pattern: "EvolvingPattern",
+        pattern: "SubstratePattern",
         stability_score: float | None = None,
     ) -> float:
         """Apply decay to pattern and update its coherence.
@@ -120,7 +121,7 @@ class CoherenceManager:
 
     def apply_crystallization_decay(
         self,
-        pattern: "EvolvingPattern",
+        pattern: "SubstratePattern",
         stability_score: float | None = None,
     ) -> float:
         """Apply decay with explicit stability score control.
@@ -139,7 +140,7 @@ class CoherenceManager:
 
     def apply_refresh(
         self,
-        pattern: "EvolvingPattern",
+        pattern: "SubstratePattern",
         activation_strength: float = 1.0,
     ) -> float:
         """Refresh pattern's coherence based on activation strength.
@@ -171,7 +172,7 @@ class CoherenceManager:
 
     def decay_then_refresh(
         self,
-        pattern: "EvolvingPattern",
+        pattern: "SubstratePattern",
         activation_strength: float = 1.0,
     ) -> float:
         """Apply decay first, then refresh. Standard operation order.
@@ -186,7 +187,7 @@ class CoherenceManager:
 
     def decay_all(
         self,
-        patterns: Sequence["EvolvingPattern"],
+        patterns: Sequence["SubstratePattern"],
     ) -> None:
         """Apply decay to all patterns.
 
@@ -201,7 +202,7 @@ class CoherenceManager:
 
     def apply_recoherence(
         self,
-        patterns: dict[str, "EvolvingPattern"],
+        patterns: dict[str, "SubstratePattern"],
         surprise: "SurpriseResult",
         boost_coefficient: float = 0.5,
         min_delta: float = 0.01,
@@ -244,7 +245,7 @@ class CoherenceManager:
         base_boost = surprise.magnitude * boost_coefficient
         deltas: dict[str, float] = {}
 
-        def apply_malleability_scaled_boost(pattern: "EvolvingPattern", proposed_delta: float) -> float:
+        def apply_malleability_scaled_boost(pattern: "SubstratePattern", proposed_delta: float) -> float:
             """Apply boost scaled by coherence (malleability).
 
             Low-coherence patterns resist change, but min_delta prevents freeze.

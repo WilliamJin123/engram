@@ -1,5 +1,6 @@
 """Quantum-inspired substrate for memory systems."""
 
+from quantum_substrate.protocols import SubstratePattern
 from quantum_substrate.patterns import ComplexSparsePattern
 from quantum_substrate.binding import bind_hrr, unbind_hrr, similarity
 from quantum_substrate.interference import (
@@ -23,6 +24,7 @@ from quantum_substrate.criticality import CriticalityConfig, CriticalityState
 
 __version__ = "0.1.0"
 __all__ = [
+    "SubstratePattern",
     "ComplexSparsePattern",
     "bind_hrr",
     "unbind_hrr",

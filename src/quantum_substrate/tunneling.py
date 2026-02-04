@@ -16,10 +16,8 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from agentic.evolving_pattern import EvolvingPattern
+from quantum_substrate.protocols import SubstratePattern
 
 
 @dataclass
@@ -81,9 +79,9 @@ class CreativeModeTracker:
 
 
 def attempt_tunneling(
-    source: "EvolvingPattern",
+    source: "SubstratePattern",
     source_id: str,
-    all_patterns: dict[str, "EvolvingPattern"],
+    all_patterns: dict[str, "SubstratePattern"],
     connections: dict[str, set[str]],  # pattern_id -> connected pattern IDs
     config: TunnelingConfig,
     creative_mode: bool = False,

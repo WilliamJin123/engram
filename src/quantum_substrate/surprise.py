@@ -13,8 +13,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Sequence
 
+from quantum_substrate.protocols import SubstratePattern
+
 if TYPE_CHECKING:
-    from agentic.evolving_pattern import EvolvingPattern
     from quantum_substrate.coherence import CoherenceManager
 
 
@@ -94,7 +95,7 @@ class SurpriseDetector:
     def build_expectation(
         self,
         query_bits: set[int],
-        patterns: dict[str, "EvolvingPattern"],
+        patterns: dict[str, "SubstratePattern"],
         coherence_manager: "CoherenceManager",
     ) -> tuple[set[int], dict[str, float]]:
         """Build expected bit pattern from query and coherence-weighted patterns.
@@ -145,7 +146,7 @@ class SurpriseDetector:
         self,
         expected_bits: set[int],
         expected_weights: dict[str, float],
-        actual_pattern: "EvolvingPattern",
+        actual_pattern: "SubstratePattern",
         actual_pattern_id: str,
         retrieval_results: Sequence[tuple[str, float]],
     ) -> SurpriseResult:
