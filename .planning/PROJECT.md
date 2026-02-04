@@ -6,73 +6,82 @@ A quantum-inspired memory system for agentic AI that uses sparse distributed pat
 
 ## Core Value
 
-**Engineer the substrate. Let everything else emerge.** The system must implement the core quantum dynamics (coherence, interference, binding, phase) faithfully — everything built on top depends on these working correctly.
+**Engineer the substrate. Let everything else emerge.** The system must implement the core quantum dynamics (coherence, interference, binding, phase) faithfully - everything built on top depends on these working correctly.
 
 ## Requirements
 
 ### Validated
 
-- HRR binding accuracy: 100% role-filler recovery (20 entities tested)
-- Phase sequence encoding: 100% ordering to n=100
-- Interference-based retrieval: phase-aware similarity working
-- Text encoding: deterministic hash-to-sparse pattern
-- Coactivation learning: bidirectional bit transfer with obesity tracking
-- Scale: <1ms binding, 50ms retrieval for 5k patterns, 11MB for 10k patterns
+- HRR binding accuracy: 100% role-filler recovery (20 entities tested) - v1.0
+- Phase sequence encoding: 100% ordering to n=100 - v1.0
+- Interference-based retrieval: phase-aware similarity working - v1.0
+- Text encoding: deterministic hash-to-sparse pattern - v1.0
+- Coactivation learning: bidirectional bit transfer with obesity tracking - v1.0
+- Scale: <1ms binding, 50ms retrieval for 5k patterns, 11MB for 10k patterns - v1.0
+- Coherence field on patterns (0-1 scale) - v1.0
+- Time-based coherence decay toward classical stability - v1.0
+- Access-based coherence refresh - v1.0
+- Surprise/contradiction re-coherence mechanism - v1.0
+- Coherence-modulated interference (low coherence = weak contribution) - v1.0
+- Tunneling: high-coherence patterns activate weakly-related patterns - v1.0
+- Criticality tuning: system-wide parameter for order vs chaos balance - v1.0
+- Fix: deterministic bit transfer in coactivation (add RNG seed) - v1.0
+- Fix: text encoding collision at small k values - v1.0
+- SubstratePattern protocol for LLM-independent substrate layer - v1.0
 
 ### Active
 
-- [ ] Coherence field on patterns (0-1 scale)
-- [ ] Time-based coherence decay toward classical stability
-- [ ] Access-based coherence refresh
-- [ ] Surprise/contradiction re-coherence mechanism
-- [ ] Coherence-modulated interference (low coherence = weak contribution)
-- [ ] Tunneling: high-coherence patterns activate weakly-related patterns
-- [ ] Criticality tuning: system-wide parameter for order vs chaos balance
-- [ ] Fix: deterministic bit transfer in coactivation (add RNG seed)
-- [ ] Fix: text encoding collision at small k values
-- [ ] Project documentation state (PROJECT.md, REQUIREMENTS.md, ROADMAP.md, STATE.md)
+(None - define in next milestone via /gsd:new-milestone)
 
 ### Out of Scope
 
-- Persistence layer — essential for production but not this milestone
-- LSH indexing for O(1) retrieval — performance optimization, defer
-- Real LLM integration testing — mock reranker sufficient for now
-- Pattern pruning/forgetting — needed eventually, not blocking coherence work
-- N-gram encoding (currently broken) — defer fix, leave disabled
+- Persistence layer - essential for production but deferred to v2
+- LSH indexing for O(1) retrieval - performance optimization, defer
+- Real LLM integration testing - mock reranker sufficient for now
+- Pattern pruning/forgetting - needed eventually, not blocking
+- N-gram encoding (currently broken) - defer fix, leave disabled
+- Patterns grow unbounded until max_bits - no backpressure signal (v2)
 
 ## Context
 
-**Theoretical foundation:**
-- `dicussions/quantum_proposal.md` — authoritative spec for substrate mechanics
-- `dicussions/quantum_agents.md` — agentic memory layer design
-- `dicussions/quantum_tests.md` — validation approach and results
+**Shipped v1.0 Coherence milestone:** 2026-02-04
 
 **Current state:**
-- 51 tests passing, all core dynamics validated
-- Coherence is described in proposal but NOT implemented in code
-- Patterns have phase and magnitude but no coherence field
-- Interference retrieval treats all patterns equally (no coherence weighting)
+- 287 tests passing (coherence, tunneling, criticality, hypothesis validation)
+- 11,445 lines of Python
+- Full coherence dynamics implemented and validated
+- Hypothesis validation: coherence dynamics and INTUITION.md behaviors confirmed
 
-**Known issues (from CONCERNS.md):**
-- `coactivation.py` uses `random.sample()` without seeding — non-deterministic
-- Text encoding at small k can cause token collisions
-- Patterns grow unbounded until max_bits; no backpressure signal
+**Hypothesis validation summary:**
+- Coherence dynamics: VALIDATED (10/10 tests pass)
+- INTUITION.md behaviors: VALIDATED (9/9 tests pass)
+- Interference vs baselines: INCONCLUSIVE (ceiling effect in synthetic tests)
+
+**Theoretical foundation:**
+- `dicussions/quantum_proposal.md` - authoritative spec for substrate mechanics
+- `dicussions/quantum_agents.md` - agentic memory layer design
+- `dicussions/quantum_tests.md` - validation approach and results
 
 ## Constraints
 
-- **Theory fidelity**: Implementation must match quantum_proposal.md spec — these documents are the authoritative design
-- **Test-first**: New dynamics must have validation tests like the existing substrate tests
-- **Backwards compatible**: Existing tests must continue to pass; don't break what works
-- **PyTorch dependency**: Continue using torch for tensor operations; no new major deps
+- **Theory fidelity**: Implementation must match quantum_proposal.md spec
+- **Test-first**: New dynamics must have validation tests
+- **Backwards compatible**: Existing tests must continue to pass
+- **PyTorch dependency**: Continue using torch for tensor operations
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| HRR over tensor product | Scalable binding (O(n) vs O(n²)) | Good |
+| HRR over tensor product | Scalable binding (O(n) vs O(n^2)) | Good |
 | Text stored, not embeddings | Avoids LLM bias, keeps substrate LLM-agnostic | Good |
 | Original bits for binding, all bits for retrieval | Prevents transitive pollution while enabling learning | Good |
-| Coherence per-pattern, not per-bit | Simpler; per-bit coherence adds complexity without clear benefit | Pending |
+| Coherence per-pattern, not per-bit | Simpler; per-bit adds complexity without clear benefit | Good |
+| Decay rate 0.05 default | Half-life ~14 ticks balances forgetting and retention | Good |
+| Coherence floor 0.01 | Patterns never fully decohere | Good |
+| Stability score = access_count / 10 | 10 accesses = max stability for crystallization | Good |
+| Tunneling requires connection AND low overlap | Ensures creative but meaningful connections | Good |
+| SubstratePattern protocol | Clean separation enables LLM-independent substrate | Good |
 
 ---
-*Last updated: 2026-01-31 after project initialization*
+*Last updated: 2026-02-04 after v1.0 milestone*
