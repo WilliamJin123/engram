@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Engineer the substrate. Let everything else emerge.
-**Current focus:** v1.1 Harder Test Cases - Phase 6 Test Infrastructure
+**Current focus:** v1.1 Harder Test Cases - Phase 7 Stress Retrieval Tests
 
 ## Current Position
 
-Phase: 6 of 8 (Test Infrastructure)
-Plan: 1 of 2 complete in current phase
-Status: In progress
-Last activity: 2026-02-04 — Completed 06-01-PLAN.md
+Phase: 6 of 8 (Test Infrastructure) - COMPLETE
+Plan: 2 of 2 complete in current phase
+Status: Phase 6 complete, ready for Phase 7
+Last activity: 2026-02-04 - Completed 06-02-PLAN.md
 
-Progress: v1.1 [######          ] 17%
+Progress: v1.1 [##########      ] 33%
 
 ## Milestone Summary
 
@@ -27,6 +27,7 @@ Progress: v1.1 [######          ] 17%
 **v1.1 Harder Test Cases** started 2026-02-04:
 - 3 phases (6-8), 10 requirements
 - Addresses ceiling effect from v1.0 hypothesis validation
+- Phase 6 (Test Infrastructure) complete
 
 ## Accumulated Context
 
@@ -45,6 +46,8 @@ v1.1 Phase 6 decisions:
 - NoiseConfig seed is mandatory (runtime enforced)
 - Near-miss overlap = 0.4 (< 0.5 to differentiate from targets)
 - Clutter relatedness: 50% distant, 30% mid, 20% close
+- Value-based enum lookup in from_preset() for pytest module identity safety
+- Post-store coherence override pattern for aged pattern injection
 
 ### Pending Todos
 
@@ -58,15 +61,15 @@ Deferred to v2:
 
 ## Session Continuity
 
-Last session: 2026-02-04T22:54:49Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-02-04T23:13:00Z
+Stopped at: Completed 06-02-PLAN.md (Phase 6 complete)
 Resume file: None
 
 ## Next Steps
 
-1. Execute 06-02-PLAN.md (inject_noise function, noisy_memory fixture)
-2. Continue through Phases 7-8
+1. Execute Phase 7 (Stress Retrieval Tests)
+2. Continue through Phase 8 (Adaptive Coherence)
 
 ---
 *State initialized: 2026-01-31*
-*Last updated: 2026-02-04 - Completed 06-01-PLAN.md*
+*Last updated: 2026-02-04 - Completed 06-02-PLAN.md (Phase 6 complete)*
