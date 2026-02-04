@@ -111,10 +111,10 @@ Plans:
   3. Architectural boundaries are documented and enforced by module structure
   4. Tests exist that can validate OR invalidate the quantum memory hypothesis
   5. Hypothesis validation tests have clear pass/fail criteria based on theory predictions
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
 
 **Intuition Tests (from INTUITION.md)** — tests must address these intelligent behaviors:
-  - Generalization: repeated exposure → shared concept with attributes
+  - Generalization: repeated exposure -> shared concept with attributes
   - Inheritance: shared attributes stored efficiently, not duplicated
   - Exceptions: specific instances can override general patterns
   - Certainty plasticity: LOW-coherence (crystallized) nodes hard to change, HIGH-coherence (malleable) easy
@@ -124,9 +124,9 @@ Plans:
   - History: how understandings change over time and why
 
 Plans:
-- [ ] 05-01: Refactor substrate for LLM-independence
-- [ ] 05-02: Document architectural boundaries
-- [ ] 05-03: Create hypothesis validation test suite (including INTUITION.md tests)
+- [ ] 05-01-PLAN.md — Create SubstratePattern protocol and refactor substrate for LLM-independence
+- [ ] 05-02-PLAN.md — Set up hypothesis test infrastructure (deps, fixtures, baselines)
+- [ ] 05-03-PLAN.md — Create hypothesis validation test suite (including INTUITION.md tests)
 
 ## Progress
 
@@ -140,7 +140,7 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 | 2. Coherence Effects | 3/3 | Complete | 2026-02-01 |
 | 3. Advanced Dynamics | 4/4 | Complete | 2026-02-02 |
 | 4. Codebase Cleanup | 2/2 | Complete | 2026-02-01 |
-| 5. Architecture Clarity | 0/3 | Not started | - |
+| 5. Architecture Clarity | 0/3 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-31*
@@ -152,3 +152,4 @@ Phases execute in numeric order. Phase 4 can run parallel to Phases 1-3.
 *Phase 3 completed: 2026-02-02*
 *Phase 4 planned: 2026-02-02*
 *Phase 4 completed: 2026-02-01*
+*Phase 5 planned: 2026-02-04*
