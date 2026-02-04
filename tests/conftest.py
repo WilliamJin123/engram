@@ -113,29 +113,30 @@ class NoiseConfig:
         Returns:
             NoiseConfig with preset values
         """
+        # Use value-based lookup to avoid enum identity issues across module imports
         presets = {
-            NoiseLevel.NONE: cls(
+            "none": cls(
                 near_miss_ratio=0.0,
                 clutter_ratio=0.0,
                 seed=seed,
             ),
-            NoiseLevel.LOW: cls(
+            "low": cls(
                 near_miss_ratio=0.5,
                 clutter_ratio=1.0,
                 seed=seed,
             ),
-            NoiseLevel.MEDIUM: cls(
+            "medium": cls(
                 near_miss_ratio=1.0,
                 clutter_ratio=3.0,
                 seed=seed,
             ),
-            NoiseLevel.HIGH: cls(
+            "high": cls(
                 near_miss_ratio=2.0,
                 clutter_ratio=5.0,
                 seed=seed,
             ),
         }
-        return presets[level]
+        return presets[level.value]
 
 
 def _raise_seed_required() -> int:
