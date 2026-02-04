@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Engineer the substrate. Let everything else emerge.
-**Current focus:** v1.0 SHIPPED - Planning next milestone
+**Current focus:** v1.1 Harder Test Cases
 
 ## Current Position
 
-Phase: Milestone complete
-Plan: N/A
-Status: Ready for /gsd:new-milestone
-Last activity: 2026-02-04 - v1.0 milestone archived and tagged
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-04 — Milestone v1.1 started
 
-Progress: v1.0 [###############] 100% SHIPPED
+Progress: v1.1 [░░░░░░░░░░░░░░░] 0%
 
 ## Milestone Summary
 
@@ -55,17 +55,11 @@ Resume file: None needed (milestone boundary)
 
 ## Next Steps
 
-Start next milestone with:
-```
-/gsd:new-milestone
-```
-
-This will:
-1. Gather requirements through questioning
-2. Research technical approach
-3. Create fresh REQUIREMENTS.md
-4. Create fresh ROADMAP.md
+Continue milestone setup:
+1. Define requirements (in progress)
+2. Create roadmap
+3. Plan phase 6
 
 ---
 *State initialized: 2026-01-31*
-*Last updated: 2026-02-04 - v1.0 milestone complete*
+*Last updated: 2026-02-04 - v1.1 milestone started*

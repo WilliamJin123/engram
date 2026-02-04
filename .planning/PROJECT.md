@@ -31,7 +31,16 @@ A quantum-inspired memory system for agentic AI that uses sparse distributed pat
 
 ### Active
 
-(None - define in next milestone via /gsd:new-milestone)
+**Current Milestone: v1.1 Harder Test Cases**
+
+**Goal:** Stress-test retrieval mechanisms with realistic memory noise to resolve the v1.0 ceiling effect and validate that interference-based retrieval outperforms baselines under challenging conditions.
+
+**Target features:**
+- Noise generators: semantic near-misses and random clutter patterns
+- Harder INTUITION.md behavior tests (tunneling, interference, coherence dynamics)
+- Differentiation metrics: interference vs cosine vs random baselines
+- Graceful degradation curves showing performance vs noise level
+- Reusable test fixtures for noisy memory scenarios
 
 ### Out of Scope
 
@@ -45,6 +54,7 @@ A quantum-inspired memory system for agentic AI that uses sparse distributed pat
 ## Context
 
 **Shipped v1.0 Coherence milestone:** 2026-02-04
+**Started v1.1 Harder Test Cases:** 2026-02-04
 
 **Current state:**
 - 287 tests passing (coherence, tunneling, criticality, hypothesis validation)
@@ -52,10 +62,12 @@ A quantum-inspired memory system for agentic AI that uses sparse distributed pat
 - Full coherence dynamics implemented and validated
 - Hypothesis validation: coherence dynamics and INTUITION.md behaviors confirmed
 
-**Hypothesis validation summary:**
+**v1.0 Hypothesis validation summary:**
 - Coherence dynamics: VALIDATED (10/10 tests pass)
 - INTUITION.md behaviors: VALIDATED (9/9 tests pass)
 - Interference vs baselines: INCONCLUSIVE (ceiling effect in synthetic tests)
+
+**v1.1 addresses:** The ceiling effect — synthetic tests were too easy, making all retrieval methods appear equivalent. Harder tests with memory noise will differentiate interference-based retrieval from baselines.
 
 **Theoretical foundation:**
 - `dicussions/quantum_proposal.md` - authoritative spec for substrate mechanics
@@ -84,4 +96,4 @@ A quantum-inspired memory system for agentic AI that uses sparse distributed pat
 | SubstratePattern protocol | Clean separation enables LLM-independent substrate | Good |
 
 ---
-*Last updated: 2026-02-04 after v1.0 milestone*
+*Last updated: 2026-02-04 after v1.1 milestone start*
