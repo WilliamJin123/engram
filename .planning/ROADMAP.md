@@ -87,7 +87,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Core noise types and generator functions (NoiseLevel, NoiseConfig, near-miss/clutter generators)
+- [x] 06-01-PLAN.md — Core noise types and generator functions (NoiseLevel, NoiseConfig, near-miss/clutter generators)
 - [ ] 06-02-PLAN.md — inject_noise function, noisy_memory fixture, and validation tests
 
 ### Phase 7: Harder Behavior Tests
@@ -132,7 +132,7 @@ Plans:
 | 3. Coactivation | v1.0 | 3/3 | Complete | 2026-02-03 |
 | 4. Coherence | v1.0 | 3/3 | Complete | 2026-02-03 |
 | 5. Architecture | v1.0 | 3/3 | Complete | 2026-02-04 |
-| 6. Test Infrastructure | v1.1 | 0/2 | Planned | - |
+| 6. Test Infrastructure | v1.1 | 1/2 | In progress | - |
 | 7. Harder Behavior Tests | v1.1 | 0/? | Not started | - |
 | 8. Metrics & Validation | v1.1 | 0/? | Not started | - |
 

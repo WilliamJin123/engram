@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 6 of 8 (Test Infrastructure)
-Plan: Ready to plan
-Status: Roadmap complete, ready to plan Phase 6
-Last activity: 2026-02-04 — Roadmap created for v1.1
+Plan: 1 of 2 complete in current phase
+Status: In progress
+Last activity: 2026-02-04 — Completed 06-01-PLAN.md
 
-Progress: v1.1 [                ] 0%
+Progress: v1.1 [######          ] 17%
 
 ## Milestone Summary
 
@@ -41,6 +41,11 @@ v1.0 key decisions preserved for context:
 - Tunneling probability 0.1, creative mode 3x
 - Criticality 0.5 initial, 0.01 adjustment rate
 
+v1.1 Phase 6 decisions:
+- NoiseConfig seed is mandatory (runtime enforced)
+- Near-miss overlap = 0.4 (< 0.5 to differentiate from targets)
+- Clutter relatedness: 50% distant, 30% mid, 20% close
+
 ### Pending Todos
 
 None.
@@ -53,16 +58,15 @@ Deferred to v2:
 
 ## Session Continuity
 
-Last session: 2026-02-04
-Stopped at: v1.1 roadmap creation
-Resume file: None needed (ready to plan)
+Last session: 2026-02-04T22:54:49Z
+Stopped at: Completed 06-01-PLAN.md
+Resume file: None
 
 ## Next Steps
 
-1. Run `/gsd:plan-phase 6` to create plans for Test Infrastructure
-2. Execute Phase 6 plans
-3. Continue through Phases 7-8
+1. Execute 06-02-PLAN.md (inject_noise function, noisy_memory fixture)
+2. Continue through Phases 7-8
 
 ---
 *State initialized: 2026-01-31*
-*Last updated: 2026-02-04 - v1.1 roadmap created*
+*Last updated: 2026-02-04 - Completed 06-01-PLAN.md*
