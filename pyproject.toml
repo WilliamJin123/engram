@@ -12,8 +12,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+hypothesis = [
+    "scipy>=1.10.0",
+    "pingouin>=0.5.0",
+    "numpy>=1.20.0",
+]
 dev = [
     "pytest>=7.0.0",
+    "scipy>=1.10.0",
+    "pingouin>=0.5.0",
+    "numpy>=1.20.0",
 ]
 
 [tool.setuptools.packages.find]
