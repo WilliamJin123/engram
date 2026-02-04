@@ -69,7 +69,7 @@ Plans:
 
 **Milestone Goal:** Stress-test retrieval mechanisms with realistic memory noise to resolve the v1.0 ceiling effect and validate that interference-based retrieval outperforms baselines under challenging conditions.
 
-- [ ] **Phase 6: Test Infrastructure** - Noise generators and reusable fixtures
+- [x] **Phase 6: Test Infrastructure** - Noise generators and reusable fixtures
 - [ ] **Phase 7: Harder Behavior Tests** - Tunneling, interference, and coherence with noise
 - [ ] **Phase 8: Metrics & Validation** - Baseline comparisons and degradation curves
 
@@ -88,7 +88,7 @@ Plans:
 
 Plans:
 - [x] 06-01-PLAN.md — Core noise types and generator functions (NoiseLevel, NoiseConfig, near-miss/clutter generators)
-- [ ] 06-02-PLAN.md — inject_noise function, noisy_memory fixture, and validation tests
+- [x] 06-02-PLAN.md — inject_noise function, noisy_memory fixture, and validation tests
 
 ### Phase 7: Harder Behavior Tests
 **Goal**: Validate core behaviors under realistic memory load
@@ -132,7 +132,7 @@ Plans:
 | 3. Coactivation | v1.0 | 3/3 | Complete | 2026-02-03 |
 | 4. Coherence | v1.0 | 3/3 | Complete | 2026-02-03 |
 | 5. Architecture | v1.0 | 3/3 | Complete | 2026-02-04 |
-| 6. Test Infrastructure | v1.1 | 1/2 | In progress | - |
+| 6. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-04 |
 | 7. Harder Behavior Tests | v1.1 | 0/? | Not started | - |
 | 8. Metrics & Validation | v1.1 | 0/? | Not started | - |
 

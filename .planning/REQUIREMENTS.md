@@ -9,10 +9,10 @@ Requirements for this milestone. Address the v1.0 ceiling effect by stress-testi
 
 ### Test Infrastructure
 
-- [ ] **INFRA-01**: Noise generator creates semantic near-miss patterns (similar but not related)
-- [ ] **INFRA-02**: Noise generator creates random clutter patterns (unrelated filler)
-- [ ] **INFRA-03**: Reusable noisy memory fixture with configurable noise composition
-- [ ] **INFRA-04**: Parameterized noise levels (none/low/medium/high) for test scaling
+- [x] **INFRA-01**: Noise generator creates semantic near-miss patterns (similar but not related)
+- [x] **INFRA-02**: Noise generator creates random clutter patterns (unrelated filler)
+- [x] **INFRA-03**: Reusable noisy memory fixture with configurable noise composition
+- [x] **INFRA-04**: Parameterized noise levels (none/low/medium/high) for test scaling
 
 ### Harder Behavior Tests
 
@@ -53,10 +53,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 6 | Pending |
-| INFRA-02 | Phase 6 | Pending |
-| INFRA-03 | Phase 6 | Pending |
-| INFRA-04 | Phase 6 | Pending |
+| INFRA-01 | Phase 6 | Complete |
+| INFRA-02 | Phase 6 | Complete |
+| INFRA-03 | Phase 6 | Complete |
+| INFRA-04 | Phase 6 | Complete |
 | TEST-01 | Phase 7 | Pending |
 | TEST-02 | Phase 7 | Pending |
 | TEST-03 | Phase 7 | Pending |
