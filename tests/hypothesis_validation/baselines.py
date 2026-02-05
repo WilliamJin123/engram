@@ -137,6 +137,34 @@ def cosine_retrieval(
     return results[:top_k]
 
 
+def recency_retrieval(
+    patterns: Dict[str, SubstratePattern],
+    current_tick: int,
+    top_k: int = 5,
+) -> List[Tuple[str, float]]:
+    """Rank patterns by recency (most recently accessed first).
+
+    Per CONTEXT.md: Include recency as third baseline.
+
+    Args:
+        patterns: Dict mapping pattern_id to SubstratePattern
+        current_tick: Current system tick for age calculation
+        top_k: Number of results to return
+
+    Returns:
+        List of (pattern_id, recency_score) tuples, sorted by recency descending.
+    """
+    results = []
+    for pattern_id, pattern in patterns.items():
+        # EvolvingPattern has last_access_tick attribute
+        age = current_tick - getattr(pattern, "last_access_tick", 0)
+        recency_score = 1.0 / (1.0 + age)
+        results.append((pattern_id, recency_score))
+
+    results.sort(key=lambda x: x[1], reverse=True)
+    return results[:top_k]
+
+
 def random_retrieval(
     patterns: Dict[str, SubstratePattern],
     top_k: int = 5,

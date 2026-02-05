@@ -25,6 +25,16 @@ from tests.conftest import NoiseLevel
 STRESS_NOISE_LEVELS = [NoiseLevel.MEDIUM, NoiseLevel.HIGH]
 
 
+def pytest_addoption(parser: Any) -> None:
+    """Add custom command-line options for stress tests."""
+    parser.addoption(
+        "--update-report",
+        action="store_true",
+        default=False,
+        help="Generate/update metrics report (slow, runs many trials)",
+    )
+
+
 def pytest_configure(config: Any) -> None:
     """Register the stress test marker."""
     config.addinivalue_line(
@@ -89,6 +99,12 @@ def capture_retrieval_metrics(
         "top_score": top_score,
         "total_patterns": store.pattern_count,
     }
+
+
+@pytest.fixture
+def update_report(request: Any) -> bool:
+    """Check if --update-report flag is set."""
+    return request.config.getoption("--update-report")
 
 
 def evaluate_success_criteria(
