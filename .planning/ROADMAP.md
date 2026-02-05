@@ -99,11 +99,12 @@ Plans:
   2. Interference retrieval tests show target patterns found among semantic near-misses and random noise
   3. Coherence dynamics tests validate decay, refresh, and surprise re-coherence behavior under load
   4. All existing INTUITION.md behavior tests continue to pass
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 07-01: TBD
-- [ ] 07-02: TBD
+- [ ] 07-01-PLAN.md — Stress test infrastructure and tunneling tests (TEST-01)
+- [ ] 07-02-PLAN.md — Interference retrieval stress tests (TEST-02)
+- [ ] 07-03-PLAN.md — Coherence dynamics stress tests (TEST-03) and TEST_SUMMARY.md
 
 ### Phase 8: Metrics & Validation
 **Goal**: Quantify differentiation from baselines and degradation behavior
@@ -133,7 +134,7 @@ Plans:
 | 4. Coherence | v1.0 | 3/3 | Complete | 2026-02-03 |
 | 5. Architecture | v1.0 | 3/3 | Complete | 2026-02-04 |
 | 6. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-04 |
-| 7. Harder Behavior Tests | v1.1 | 0/? | Not started | - |
+| 7. Harder Behavior Tests | v1.1 | 0/3 | Not started | - |
 | 8. Metrics & Validation | v1.1 | 0/? | Not started | - |
 
 ---
