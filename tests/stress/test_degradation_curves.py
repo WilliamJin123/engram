@@ -230,3 +230,119 @@ def _get_tuple_rank(
         if pid == target_id:
             return i + 1
     return top_k + 1
+
+
+# =============================================================================
+# Test Functions (METR-03)
+# =============================================================================
+
+
+@pytest.mark.stress
+def test_degradation_4level(noisy_memory, update_report):
+    """METR-03: 4-level summary degradation (NONE/LOW/MEDIUM/HIGH).
+
+    Per CONTEXT.md: Both 4-level summary AND fine-grained curves.
+    Collects performance metrics at each noise preset level.
+    """
+    n_trials = 20 if update_report else 5
+
+    data = collect_4level_degradation(noisy_memory, n_trials=n_trials)
+
+    metrics = StressMetrics(
+        test_name="degradation_4level",
+        noise_level="all",
+        success=True,  # Measurement test - always succeeds
+        metrics={
+            "n_trials": n_trials,
+            "levels": data,
+        },
+    )
+
+    print(f"\nMETRICS: {metrics.to_json()}")
+
+    # Generate plot if --update-report
+    if update_report:
+        plot_data = {
+            "noise_level": [0, 1, 2, 3],  # NONE=0, LOW=1, etc.
+            "mean_rank": [
+                data["none"]["mean_rank"],
+                data["low"]["mean_rank"],
+                data["medium"]["mean_rank"],
+                data["high"]["mean_rank"],
+            ],
+            "std_rank": [
+                data["none"]["std_rank"],
+                data["low"]["std_rank"],
+                data["medium"]["std_rank"],
+                data["high"]["std_rank"],
+            ],
+        }
+        output_path = os.path.join(REPORTS_DIR, "degradation_4level.png")
+        plot_degradation_curve(plot_data, output_path)
+        print(f"Plot saved to {output_path}")
+
+
+@pytest.mark.stress
+def test_degradation_fine_grained(noisy_memory, update_report):
+    """METR-03: Fine-grained degradation curve (10+ near-miss counts).
+
+    Per CONTEXT.md: X-axis = near-miss count specifically.
+    Collects performance at 10 different near-miss counts.
+    """
+    n_trials = 15 if update_report else 5
+
+    data = collect_fine_grained_degradation(noisy_memory, n_trials=n_trials)
+
+    metrics = StressMetrics(
+        test_name="degradation_fine_grained",
+        noise_level="varied",
+        success=True,
+        metrics={
+            "n_trials": n_trials,
+            "near_miss_counts": data["noise_level"],
+            "mean_ranks": data["mean_rank"],
+            "std_ranks": data["std_rank"],
+            "recall_at_3": data["recall_at_3"],
+        },
+    )
+
+    print(f"\nMETRICS: {metrics.to_json()}")
+
+    if update_report:
+        output_path = os.path.join(REPORTS_DIR, "degradation_fine_grained.png")
+        plot_degradation_curve(data, output_path)
+        print(f"Plot saved to {output_path}")
+
+
+@pytest.mark.stress
+def test_method_comparison_curves(noisy_memory, update_report):
+    """Multi-method degradation comparison curves.
+
+    Per CONTEXT.md: Show degradation across all methods.
+    Compares interference vs cosine vs random vs recency.
+    """
+    n_trials = 15 if update_report else 5
+
+    methods_data, noise_levels = collect_method_comparison_degradation(
+        noisy_memory,
+        near_miss_counts=[0, 1, 2, 3, 5, 7, 10],
+        n_trials=n_trials,
+    )
+
+    metrics = StressMetrics(
+        test_name="method_comparison_curves",
+        noise_level="varied",
+        success=True,
+        metrics={
+            "n_trials": n_trials,
+            "noise_levels": noise_levels,
+            "methods": methods_data,
+        },
+    )
+
+    print(f"\nMETRICS: {metrics.to_json()}")
+
+    if update_report:
+        output_path = os.path.join(REPORTS_DIR, "method_comparison.png")
+        plot_method_comparison(noise_levels, methods_data, output_path)
+        print(f"Plot saved to {output_path}")
