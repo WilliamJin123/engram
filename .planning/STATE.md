@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 8 of 8 (Metrics & Validation)
-Plan: 1 of 3 complete in Phase 8
+Plan: 2 of 3 complete in Phase 8
 Status: In progress
-Last activity: 2026-02-05 - Completed 08-01-PLAN.md
+Last activity: 2026-02-05 - Completed 08-02-PLAN.md
 
-Progress: v1.1 Phases 6-8 [##################--] 90% (6/7 plans)
-Progress: v1.1 Overall [##############--] 86% (6/7 plans)
+Progress: v1.1 Phases 6-8 [###################-] 95% (7/8 plans)
+Progress: v1.1 Overall [###############-] 93% (7/8 plans)
 
 ## Milestone Summary
 
@@ -30,7 +30,7 @@ Progress: v1.1 Overall [##############--] 86% (6/7 plans)
 - Addresses ceiling effect from v1.0 hypothesis validation
 - Phase 6 (Test Infrastructure) complete
 - Phase 7 (Stress Retrieval Tests) COMPLETE
-- Phase 8 (Metrics & Validation) in progress - Plan 1 complete
+- Phase 8 (Metrics & Validation) in progress - Plan 2 complete
 
 ## Phase 7 Test Results Summary
 
@@ -74,6 +74,9 @@ v1.1 Phase 8 decisions:
 - Mann-Whitney U test for non-parametric rank comparison
 - fill_between for shaded confidence bands in plots
 - Recency score = 1/(1+age) for time-based ranking
+- Interference vs cosine: no significant difference (both achieve MRR 1.0)
+- Interference vs random: significantly better (p < 0.001)
+- Convert numpy bool to Python bool for JSON serialization
 
 ### Pending Todos
 
@@ -93,16 +96,15 @@ Phase 8 improvements identified:
 
 ## Session Continuity
 
-Last session: 2026-02-05T02:30:00Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-02-05T02:35:00Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-1. Execute 08-02-PLAN.md (baseline comparison tests)
-2. Execute 08-03-PLAN.md (degradation curve validation)
-3. Complete v1.1 milestone
+1. Execute 08-03-PLAN.md (degradation curve validation)
+2. Complete v1.1 milestone
 
 ---
 *State initialized: 2026-01-31*
-*Last updated: 2026-02-05 - Completed 08-01-PLAN.md (Phase 8 Plan 1 complete)*
+*Last updated: 2026-02-05 - Completed 08-02-PLAN.md (Phase 8 Plan 2 complete)*
