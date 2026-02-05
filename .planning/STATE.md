@@ -5,16 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Engineer the substrate. Let everything else emerge.
-**Current focus:** v1.1 Harder Test Cases - Phase 7 Stress Retrieval Tests
+**Current focus:** v1.1 Harder Test Cases - Phase 7 COMPLETE, ready for Phase 8
 
 ## Current Position
 
-Phase: 7 of 8 (Stress Retrieval Tests) - IN PROGRESS
-Plan: 2 of 5 complete in current phase
-Status: 07-02 complete, continuing Phase 7
-Last activity: 2026-02-05 - Completed 07-02-PLAN.md
+Phase: 7 of 8 (Stress Retrieval Tests) - COMPLETE
+Plan: 3 of 3 complete in Phase 7
+Status: Phase 7 complete, ready for Phase 8 planning
+Last activity: 2026-02-05 - Completed 07-03-PLAN.md
 
-Progress: v1.1 [############    ] 50%
+Progress: v1.1 Phases 6-7 [################] 100% (5/5 plans)
+Progress: v1.1 Overall [############----] 75% (Phase 8 not yet planned)
 
 ## Milestone Summary
 
@@ -28,7 +29,18 @@ Progress: v1.1 [############    ] 50%
 - 3 phases (6-8), 10 requirements
 - Addresses ceiling effect from v1.0 hypothesis validation
 - Phase 6 (Test Infrastructure) complete
-- Phase 7 in progress (2/5 plans complete)
+- Phase 7 (Stress Retrieval Tests) COMPLETE
+- Phase 8 (Adaptive Coherence) not yet planned
+
+## Phase 7 Test Results Summary
+
+See: .planning/phases/07-harder-behavior-tests/TEST_SUMMARY.md
+
+Key metrics for Phase 8:
+- **Degradation curve**: Linear (rank 1->6->9 for 1->3->5 near-misses)
+- **Success criteria**: Strict 0%, Relaxed 50%/0%, Relative 0%
+- **Coherence decay**: 0.59 (MEDIUM), 0.77 (HIGH) over 30 ops
+- **Tunneling**: Success drops from ~20% (MEDIUM) to 0% (HIGH)
 
 ## Accumulated Context
 
@@ -54,6 +66,8 @@ v1.1 Phase 7 decisions:
 - Use pytest.skip for probabilistic limitations, not hard assertions
 - Document degradation as linear (rank 1->6->9) not cliff-like
 - Coherence weighting favors near-misses - documented as Phase 8 improvement area
+- Crystallization effect not observable - needs Phase 8 investigation
+- Surprise detection targets clutter under noise - documented limitation
 
 ### Pending Todos
 
@@ -68,19 +82,21 @@ Deferred to v2:
 Phase 8 improvements identified:
 - Coherence weighting in interference retrieval favors aged near-misses
 - Consider separating "recency" from "quality" in retrieval scoring
+- Investigate why crystallization_factor doesn't produce observable decay differences
+- Consider improving surprise detection to target "forgotten" patterns rather than clutter
 
 ## Session Continuity
 
-Last session: 2026-02-05T00:47:41Z
-Stopped at: Completed 07-02-PLAN.md
+Last session: 2026-02-05T01:15:00Z
+Stopped at: Completed 07-03-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-1. Execute 07-03-PLAN.md (TEST-03: Surprise detection stress tests)
-2. Continue through remaining Phase 7 plans
-3. Execute Phase 8 (Adaptive Coherence)
+1. Plan Phase 8 (Adaptive Coherence) - use TEST_SUMMARY.md metrics as baseline
+2. Execute Phase 8 plans
+3. Complete v1.1 milestone
 
 ---
 *State initialized: 2026-01-31*
-*Last updated: 2026-02-05 - Completed 07-02-PLAN.md*
+*Last updated: 2026-02-05 - Completed 07-03-PLAN.md (Phase 7 complete)*
