@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 8 of 8 (Metrics & Validation)
-Plan: 2 of 3 complete in Phase 8
-Status: In progress
-Last activity: 2026-02-05 - Completed 08-02-PLAN.md
+Plan: 3 of 3 complete in Phase 8
+Status: Phase complete
+Last activity: 2026-02-05 - Completed 08-03-PLAN.md
 
-Progress: v1.1 Phases 6-8 [###################-] 95% (7/8 plans)
-Progress: v1.1 Overall [###############-] 93% (7/8 plans)
+Progress: v1.1 Phases 6-8 [####################] 100% (8/8 plans)
+Progress: v1.1 Overall [################] 100% (8/8 plans)
 
 ## Milestone Summary
 
@@ -30,7 +30,7 @@ Progress: v1.1 Overall [###############-] 93% (7/8 plans)
 - Addresses ceiling effect from v1.0 hypothesis validation
 - Phase 6 (Test Infrastructure) complete
 - Phase 7 (Stress Retrieval Tests) COMPLETE
-- Phase 8 (Metrics & Validation) in progress - Plan 2 complete
+- Phase 8 (Metrics & Validation) COMPLETE
 
 ## Phase 7 Test Results Summary
 
@@ -77,6 +77,9 @@ v1.1 Phase 8 decisions:
 - Interference vs cosine: no significant difference (both achieve MRR 1.0)
 - Interference vs random: significantly better (p < 0.001)
 - Convert numpy bool to Python bool for JSON serialization
+- Fine-grained degradation: 10 data points [0,1,2,3,4,5,7,10,15,20]
+- Method comparison: 7 data points [0,1,2,3,5,7,10]
+- n_trials scales with --update-report flag (20/15 vs 5)
 
 ### Pending Todos
 
@@ -96,15 +99,15 @@ Phase 8 improvements identified:
 
 ## Session Continuity
 
-Last session: 2026-02-05T02:35:00Z
-Stopped at: Completed 08-02-PLAN.md
+Last session: 2026-02-05T02:33:00Z
+Stopped at: Completed 08-03-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-1. Execute 08-03-PLAN.md (degradation curve validation)
-2. Complete v1.1 milestone
+1. Complete v1.1 milestone (/gsd:complete-milestone)
+2. Optionally run full report: `pytest tests/stress/test_degradation_curves.py -v --update-report`
 
 ---
 *State initialized: 2026-01-31*
-*Last updated: 2026-02-05 - Completed 08-02-PLAN.md (Phase 8 Plan 2 complete)*
+*Last updated: 2026-02-05 - Completed 08-03-PLAN.md (Phase 8 Plan 3 complete, v1.1 COMPLETE)*
