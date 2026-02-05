@@ -280,3 +280,117 @@ def test_interference_vs_recency_baseline(noisy_memory, noise_level, update_repo
     )
 
     print(f"\nMETRICS: {metrics.to_json()}")
+
+
+# =============================================================================
+# Comprehensive Comparison: All Methods Summary
+# =============================================================================
+
+
+@pytest.mark.stress
+@pytest.mark.parametrize("noise_level", STRESS_NOISE_LEVELS)
+def test_all_methods_comparison(noisy_memory, noise_level, update_report):
+    """Comprehensive comparison of interference vs all baselines.
+
+    Produces summary metrics for report generation with:
+    - MRR, Recall@3, Recall@5 for each method
+    - Statistical significance vs each baseline
+    - Overall success metrics
+    """
+    n_trials = 30 if update_report else 10
+
+    results = run_comparison_trials(noisy_memory, noise_level, n_trials=n_trials)
+
+    # Compute metrics for all methods
+    summary = {
+        "noise_level": noise_level.value,
+        "n_trials": n_trials,
+        "methods": {},
+    }
+
+    for method_name, ranks in results.items():
+        valid_ranks = [r for r in ranks if r is not None]
+        summary["methods"][method_name] = {
+            "mean_rank": sum(valid_ranks) / len(valid_ranks) if valid_ranks else None,
+            "mrr": compute_mrr(ranks),
+            "recall_at_3": compute_recall_at_k(ranks, k=3),
+            "recall_at_5": compute_recall_at_k(ranks, k=5),
+        }
+
+    # Statistical comparisons: interference vs each baseline
+    comparisons = {}
+    for baseline in ["cosine", "random", "recency"]:
+        comp = compare_methods(
+            results["interference"],
+            results[baseline],
+            "interference",
+            baseline,
+        )
+        comparisons[f"interference_vs_{baseline}"] = {
+            "p_value": comp["p_value"],
+            "significant": bool(comp["significant_at_0.05"]),
+        }
+
+    summary["comparisons"] = comparisons
+
+    # Determine overall success: interference significantly better than at least one baseline
+    any_significant = any(c["significant"] for c in comparisons.values())
+    all_significant = all(c["significant"] for c in comparisons.values())
+
+    summary["overall"] = {
+        "any_baseline_beaten": any_significant,
+        "all_baselines_beaten": all_significant,
+    }
+
+    metrics = StressMetrics(
+        test_name="all_methods_comparison",
+        noise_level=noise_level.value,
+        success=any_significant,
+        metrics=summary,
+    )
+
+    print(f"\nMETRICS: {metrics.to_json()}")
+
+
+# =============================================================================
+# Clean Memory Baseline: Reference Performance
+# =============================================================================
+
+
+@pytest.mark.stress
+def test_clean_memory_baseline_comparison(noisy_memory, update_report):
+    """Baseline comparison on CLEAN memory (NoiseLevel.NONE).
+
+    Per CONTEXT.md: Test baselines on BOTH clean and noisy memory.
+    This establishes ceiling performance for each method.
+    """
+    n_trials = 30 if update_report else 10
+
+    results = run_comparison_trials(
+        noisy_memory,
+        NoiseLevel.NONE,
+        n_trials=n_trials,
+    )
+
+    summary = {
+        "noise_level": "none",
+        "n_trials": n_trials,
+        "methods": {},
+    }
+
+    for method_name, ranks in results.items():
+        valid_ranks = [r for r in ranks if r is not None]
+        summary["methods"][method_name] = {
+            "mean_rank": sum(valid_ranks) / len(valid_ranks) if valid_ranks else None,
+            "mrr": compute_mrr(ranks),
+            "recall_at_3": compute_recall_at_k(ranks, k=3),
+        }
+
+    metrics = StressMetrics(
+        test_name="clean_memory_baseline",
+        noise_level="none",
+        success=True,  # Clean memory is reference, not pass/fail
+        metrics=summary,
+    )
+
+    print(f"\nMETRICS: {metrics.to_json()}")
