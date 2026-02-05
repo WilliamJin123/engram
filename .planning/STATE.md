@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 
 ## Current Position
 
-Phase: 6 of 8 (Test Infrastructure) - COMPLETE
-Plan: 2 of 2 complete in current phase
-Status: Phase 6 complete, ready for Phase 7
-Last activity: 2026-02-04 - Completed 06-02-PLAN.md
+Phase: 7 of 8 (Stress Retrieval Tests) - IN PROGRESS
+Plan: 2 of 5 complete in current phase
+Status: 07-02 complete, continuing Phase 7
+Last activity: 2026-02-05 - Completed 07-02-PLAN.md
 
-Progress: v1.1 [##########      ] 33%
+Progress: v1.1 [############    ] 50%
 
 ## Milestone Summary
 
@@ -28,6 +28,7 @@ Progress: v1.1 [##########      ] 33%
 - 3 phases (6-8), 10 requirements
 - Addresses ceiling effect from v1.0 hypothesis validation
 - Phase 6 (Test Infrastructure) complete
+- Phase 7 in progress (2/5 plans complete)
 
 ## Accumulated Context
 
@@ -49,6 +50,11 @@ v1.1 Phase 6 decisions:
 - Value-based enum lookup in from_preset() for pytest module identity safety
 - Post-store coherence override pattern for aged pattern injection
 
+v1.1 Phase 7 decisions:
+- Use pytest.skip for probabilistic limitations, not hard assertions
+- Document degradation as linear (rank 1->6->9) not cliff-like
+- Coherence weighting favors near-misses - documented as Phase 8 improvement area
+
 ### Pending Todos
 
 None.
@@ -59,17 +65,22 @@ Deferred to v2:
 - Patterns grow unbounded until max_bits; no backpressure
 - N-gram encoding disabled (broken)
 
+Phase 8 improvements identified:
+- Coherence weighting in interference retrieval favors aged near-misses
+- Consider separating "recency" from "quality" in retrieval scoring
+
 ## Session Continuity
 
-Last session: 2026-02-04T23:13:00Z
-Stopped at: Completed 06-02-PLAN.md (Phase 6 complete)
+Last session: 2026-02-05T00:47:41Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-1. Execute Phase 7 (Stress Retrieval Tests)
-2. Continue through Phase 8 (Adaptive Coherence)
+1. Execute 07-03-PLAN.md (TEST-03: Surprise detection stress tests)
+2. Continue through remaining Phase 7 plans
+3. Execute Phase 8 (Adaptive Coherence)
 
 ---
 *State initialized: 2026-01-31*
-*Last updated: 2026-02-04 - Completed 06-02-PLAN.md (Phase 6 complete)*
+*Last updated: 2026-02-05 - Completed 07-02-PLAN.md*
