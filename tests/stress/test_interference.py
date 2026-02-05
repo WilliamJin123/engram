@@ -11,12 +11,21 @@ Tests all three success criteria:
 
 All tests output metrics for Phase 8 degradation curve analysis.
 
-Observations from testing:
+Observations from testing (2026-02-05):
 - Interference method with coherence weighting tends to favor high-coherence
   near-misses when target has lower coherence. This is expected behavior.
-- Near-miss degradation is generally linear rather than cliff-like.
+- Near-miss degradation is LINEAR rather than cliff-like:
+  - 1 near-miss: target_rank = 1 (top-1)
+  - 3 near-misses: target_rank = 6
+  - 5 near-misses: target_rank = 9
 - Relative criterion (target above near-misses) is most challenging due to
   coherence weighting - aged near-misses with similar coherence compete directly.
+- MEDIUM noise: Targets found but often not in top-3 (relaxed criterion fails)
+- HIGH noise: Targets often rank position 7+ (strict/relaxed criteria fail)
+- Precision/recall test shows 0% recall at both MEDIUM and HIGH noise levels
+  when retrieving across multiple targets - this is a documented limitation.
+- Near-misses consistently outrank targets due to coherence weighting, indicating
+  potential Phase 8 work: separate "recency" from "quality" in retrieval scoring.
 """
 
 from __future__ import annotations
