@@ -66,12 +66,13 @@ class TestTunnelingThroughNoise:
         # Create connection between source and target
         store.create_connection(source_id, target_id)
 
-        # Set source coherence high (required for tunneling)
-        store.patterns[source_id].coherence = 0.9
-
-        # Inject noise
+        # Inject noise FIRST (this advances tick and causes decay)
         config = NoiseConfig.from_preset(noise_level, seed=42)
         noise_result = inject_noise(store, [source_id, target_id], config)
+
+        # Set source coherence high AFTER noise injection
+        # (noise injection causes decay via tick advancement)
+        store.patterns[source_id].coherence = 0.9
 
         # Configure tunneling with favorable settings
         tunneling_config = TunnelingConfig(
@@ -154,15 +155,15 @@ class TestTunnelingThroughNoise:
         store.create_connection(source_id, intermediate_id)
         store.create_connection(intermediate_id, target_id)
 
-        # Set coherence high on source and intermediate
-        store.patterns[source_id].coherence = 0.9
-        store.patterns[intermediate_id].coherence = 0.8
-
-        # Inject noise
+        # Inject noise FIRST (this advances tick and causes decay)
         config = NoiseConfig.from_preset(noise_level, seed=123)
         noise_result = inject_noise(
             store, [source_id, intermediate_id, target_id], config
         )
+
+        # Set coherence high AFTER noise injection
+        store.patterns[source_id].coherence = 0.9
+        store.patterns[intermediate_id].coherence = 0.8
 
         # Configure tunneling for multi-hop
         tunneling_config = TunnelingConfig(
@@ -239,10 +240,12 @@ class TestTunnelingThroughNoise:
         source_high_id = store_high.store("high coherence source pattern")
         target_high_id = store_high.store("connected target pattern")
         store_high.create_connection(source_high_id, target_high_id)
-        store_high.patterns[source_high_id].coherence = 0.8
 
         config = NoiseConfig.from_preset(noise_level, seed=456)
         inject_noise(store_high, [source_high_id, target_high_id], config)
+
+        # Set coherence AFTER noise injection
+        store_high.patterns[source_high_id].coherence = 0.8
 
         tunneling_config = TunnelingConfig(
             baseline_probability=0.99,  # Very high to maximize tunnel chance
@@ -263,9 +266,11 @@ class TestTunnelingThroughNoise:
         source_low_id = store_low.store("low coherence source pattern")
         target_low_id = store_low.store("connected target pattern")
         store_low.create_connection(source_low_id, target_low_id)
-        store_low.patterns[source_low_id].coherence = 0.3
 
         inject_noise(store_low, [source_low_id, target_low_id], config)
+
+        # Set coherence AFTER noise injection (below threshold)
+        store_low.patterns[source_low_id].coherence = 0.3
         store_low.set_tunneling_config(tunneling_config)
 
         _, tunnel_results_low = store_low.retrieve_with_tunneling(
@@ -325,10 +330,12 @@ class TestTunnelingThroughNoise:
             source_id = store.store("moderate coherence source quantum")
             target_id = store.store("creative target association leap")
             store.create_connection(source_id, target_id)
-            store.patterns[source_id].coherence = 0.4  # Moderate, above threshold
 
             config = NoiseConfig.from_preset(noise_level, seed=trial_seed)
             inject_noise(store, [source_id, target_id], config)
+
+            # Set coherence AFTER noise injection
+            store.patterns[source_id].coherence = 0.4  # Moderate, above threshold
 
             tunneling_config = TunnelingConfig(
                 baseline_probability=0.15,  # Low base probability
