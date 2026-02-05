@@ -16,9 +16,9 @@ Requirements for this milestone. Address the v1.0 ceiling effect by stress-testi
 
 ### Harder Behavior Tests
 
-- [ ] **TEST-01**: Tunneling tests with noisy memory (high-coherence retrieval through clutter)
-- [ ] **TEST-02**: Interference retrieval tests with noisy memory (find relevant among noise)
-- [ ] **TEST-03**: Coherence dynamics tests with noisy memory (decay/refresh/surprise under load)
+- [x] **TEST-01**: Tunneling tests with noisy memory (high-coherence retrieval through clutter)
+- [x] **TEST-02**: Interference retrieval tests with noisy memory (find relevant among noise)
+- [x] **TEST-03**: Coherence dynamics tests with noisy memory (decay/refresh/surprise under load)
 
 ### Metrics & Validation
 
@@ -57,9 +57,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-02 | Phase 6 | Complete |
 | INFRA-03 | Phase 6 | Complete |
 | INFRA-04 | Phase 6 | Complete |
-| TEST-01 | Phase 7 | Pending |
-| TEST-02 | Phase 7 | Pending |
-| TEST-03 | Phase 7 | Pending |
+| TEST-01 | Phase 7 | Complete |
+| TEST-02 | Phase 7 | Complete |
+| TEST-03 | Phase 7 | Complete |
 | METR-01 | Phase 8 | Pending |
 | METR-02 | Phase 8 | Pending |
 | METR-03 | Phase 8 | Pending |
@@ -71,4 +71,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 after roadmap creation*
+*Last updated: 2026-02-05 - Phase 7 requirements complete*

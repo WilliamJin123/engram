@@ -70,7 +70,7 @@ Plans:
 **Milestone Goal:** Stress-test retrieval mechanisms with realistic memory noise to resolve the v1.0 ceiling effect and validate that interference-based retrieval outperforms baselines under challenging conditions.
 
 - [x] **Phase 6: Test Infrastructure** - Noise generators and reusable fixtures
-- [ ] **Phase 7: Harder Behavior Tests** - Tunneling, interference, and coherence with noise
+- [x] **Phase 7: Harder Behavior Tests** - Tunneling, interference, and coherence with noise
 - [ ] **Phase 8: Metrics & Validation** - Baseline comparisons and degradation curves
 
 ## Phase Details
@@ -102,9 +102,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Stress test infrastructure and tunneling tests (TEST-01)
-- [ ] 07-02-PLAN.md — Interference retrieval stress tests (TEST-02)
-- [ ] 07-03-PLAN.md — Coherence dynamics stress tests (TEST-03) and TEST_SUMMARY.md
+- [x] 07-01-PLAN.md — Stress test infrastructure and tunneling tests (TEST-01)
+- [x] 07-02-PLAN.md — Interference retrieval stress tests (TEST-02)
+- [x] 07-03-PLAN.md — Coherence dynamics stress tests (TEST-03) and TEST_SUMMARY.md
 
 ### Phase 8: Metrics & Validation
 **Goal**: Quantify differentiation from baselines and degradation behavior
@@ -134,9 +134,9 @@ Plans:
 | 4. Coherence | v1.0 | 3/3 | Complete | 2026-02-03 |
 | 5. Architecture | v1.0 | 3/3 | Complete | 2026-02-04 |
 | 6. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-04 |
-| 7. Harder Behavior Tests | v1.1 | 0/3 | Not started | - |
+| 7. Harder Behavior Tests | v1.1 | 3/3 | Complete | 2026-02-05 |
 | 8. Metrics & Validation | v1.1 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-02-04*
-*Last updated: 2026-02-04*
+*Last updated: 2026-02-05*
