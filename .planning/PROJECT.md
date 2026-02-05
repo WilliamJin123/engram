@@ -28,19 +28,17 @@ A quantum-inspired memory system for agentic AI that uses sparse distributed pat
 - Fix: deterministic bit transfer in coactivation (add RNG seed) - v1.0
 - Fix: text encoding collision at small k values - v1.0
 - SubstratePattern protocol for LLM-independent substrate layer - v1.0
+- Noise generation toolkit: near-misses (40% overlap) and clutter patterns - v1.1
+- noisy_memory pytest fixture with 4 noise levels (NONE/LOW/MEDIUM/HIGH) - v1.1
+- Tunneling validated under noise: ~20% success at MEDIUM, 0% at HIGH - v1.1
+- Interference retrieval validated under noise: linear degradation (rank 1→6→9) - v1.1
+- Coherence dynamics validated under noise: decay/refresh/floor all working - v1.1
+- Interference vs random baseline: significantly better (p < 0.001) - v1.1
+- MRR, Recall@K metrics with Mann-Whitney U statistical testing - v1.1
 
 ### Active
 
-**Current Milestone: v1.1 Harder Test Cases**
-
-**Goal:** Stress-test retrieval mechanisms with realistic memory noise to resolve the v1.0 ceiling effect and validate that interference-based retrieval outperforms baselines under challenging conditions.
-
-**Target features:**
-- Noise generators: semantic near-misses and random clutter patterns
-- Harder INTUITION.md behavior tests (tunneling, interference, coherence dynamics)
-- Differentiation metrics: interference vs cosine vs random baselines
-- Graceful degradation curves showing performance vs noise level
-- Reusable test fixtures for noisy memory scenarios
+(No active milestone - use /gsd:new-milestone to start next cycle)
 
 ### Out of Scope
 
@@ -54,20 +52,21 @@ A quantum-inspired memory system for agentic AI that uses sparse distributed pat
 ## Context
 
 **Shipped v1.0 Coherence milestone:** 2026-02-04
-**Started v1.1 Harder Test Cases:** 2026-02-04
+**Shipped v1.1 Harder Test Cases:** 2026-02-05
 
 **Current state:**
-- 287 tests passing (coherence, tunneling, criticality, hypothesis validation)
-- 11,445 lines of Python
+- 392+ tests passing (287 v1.0 + 105 v1.1)
+- 15,148 lines of Python
 - Full coherence dynamics implemented and validated
-- Hypothesis validation: coherence dynamics and INTUITION.md behaviors confirmed
+- Stress testing infrastructure with noise generation toolkit
+- Statistical metrics (MRR, Recall@K, Mann-Whitney U)
 
-**v1.0 Hypothesis validation summary:**
-- Coherence dynamics: VALIDATED (10/10 tests pass)
-- INTUITION.md behaviors: VALIDATED (9/9 tests pass)
-- Interference vs baselines: INCONCLUSIVE (ceiling effect in synthetic tests)
-
-**v1.1 addresses:** The ceiling effect — synthetic tests were too easy, making all retrieval methods appear equivalent. Harder tests with memory noise will differentiate interference-based retrieval from baselines.
+**v1.1 Key findings:**
+- Interference vs Random: Significantly better (p < 0.001)
+- Interference vs Cosine: No significant difference at clean conditions
+- Degradation: Linear (rank 1→6→9), not cliff-like
+- Tunneling: Success ~20% at MEDIUM noise, 0% at HIGH noise
+- Coherence decay: 0.59-0.77 over 30 operations under noise
 
 **Theoretical foundation:**
 - `dicussions/quantum_proposal.md` - authoritative spec for substrate mechanics
@@ -94,6 +93,11 @@ A quantum-inspired memory system for agentic AI that uses sparse distributed pat
 | Stability score = access_count / 10 | 10 accesses = max stability for crystallization | Good |
 | Tunneling requires connection AND low overlap | Ensures creative but meaningful connections | Good |
 | SubstratePattern protocol | Clean separation enables LLM-independent substrate | Good |
+| Near-miss overlap 0.4 | < 0.5 differentiates from targets; > 0.3 for meaningful similarity | Good |
+| MRR as primary metric | Single correct answer per query, standard IR metric | Good |
+| Mann-Whitney U test | Non-parametric rank comparison, no distribution assumptions | Good |
+| Value-based enum lookup | Avoids pytest module identity issues | Good |
+| Soft metrics (no hard assertions) | Statistical tests for validation, not gatekeeping | Good |
 
 ---
-*Last updated: 2026-02-04 after v1.1 milestone start*
+*Last updated: 2026-02-05 after v1.1 milestone completion*
