@@ -130,3 +130,153 @@ def run_comparison_trials(
         "random": random_ranks,
         "recency": recency_ranks,
     }
+
+
+# =============================================================================
+# METR-01: Interference vs Cosine Baseline
+# =============================================================================
+
+
+@pytest.mark.stress
+@pytest.mark.parametrize("noise_level", STRESS_NOISE_LEVELS)
+def test_interference_vs_cosine_baseline(noisy_memory, noise_level, update_report):
+    """METR-01: Differentiation test - interference vs cosine similarity.
+
+    Per CONTEXT.md: Document results without failing tests.
+    Per RESEARCH.md: Use Mann-Whitney U test for significance.
+
+    Cosine baseline uses sparse binary vector similarity.
+    Interference retrieval uses quantum-inspired amplitude interference.
+    """
+    # Reduce trials if not generating report (faster CI)
+    n_trials = 30 if update_report else 10
+
+    results = run_comparison_trials(noisy_memory, noise_level, n_trials=n_trials)
+
+    # Compare interference vs cosine using Mann-Whitney U
+    comparison = compare_methods(
+        results["interference"],
+        results["cosine"],
+        "interference",
+        "cosine",
+    )
+
+    # Compute MRR for each method
+    int_mrr = compute_mrr(results["interference"])
+    cos_mrr = compute_mrr(results["cosine"])
+
+    # Convert numpy bool to Python bool for JSON serialization
+    is_significant = bool(comparison["significant_at_0.05"])
+
+    # Document results (soft metrics - no assertions that fail)
+    metrics = StressMetrics(
+        test_name="interference_vs_cosine",
+        noise_level=noise_level.value,
+        success=is_significant,
+        metrics={
+            "interference_mrr": int_mrr,
+            "cosine_mrr": cos_mrr,
+            "interference_mean_rank": sum(results["interference"]) / len(results["interference"]),
+            "cosine_mean_rank": sum(results["cosine"]) / len(results["cosine"]),
+            "p_value": comparison["p_value"],
+            "statistically_significant": is_significant,
+            "interpretation": comparison["interpretation"],
+            "n_trials": n_trials,
+        },
+    )
+
+    print(f"\nMETRICS: {metrics.to_json()}")
+
+
+# =============================================================================
+# METR-02: Interference vs Random Baseline
+# =============================================================================
+
+
+@pytest.mark.stress
+@pytest.mark.parametrize("noise_level", STRESS_NOISE_LEVELS)
+def test_interference_vs_random_baseline(noisy_memory, noise_level, update_report):
+    """METR-02: Differentiation test - interference vs random retrieval.
+
+    Random is floor baseline - interference SHOULD significantly outperform.
+    Any meaningful retrieval method should beat random selection.
+    """
+    n_trials = 30 if update_report else 10
+
+    results = run_comparison_trials(noisy_memory, noise_level, n_trials=n_trials)
+
+    # Compare interference vs random
+    comparison = compare_methods(
+        results["interference"],
+        results["random"],
+        "interference",
+        "random",
+    )
+
+    int_mrr = compute_mrr(results["interference"])
+    rand_mrr = compute_mrr(results["random"])
+
+    # Convert numpy bool to Python bool for JSON serialization
+    is_significant = bool(comparison["significant_at_0.05"])
+
+    metrics = StressMetrics(
+        test_name="interference_vs_random",
+        noise_level=noise_level.value,
+        success=is_significant,
+        metrics={
+            "interference_mrr": int_mrr,
+            "random_mrr": rand_mrr,
+            "interference_mean_rank": sum(results["interference"]) / len(results["interference"]),
+            "random_mean_rank": sum(results["random"]) / len(results["random"]),
+            "p_value": comparison["p_value"],
+            "statistically_significant": is_significant,
+            "interpretation": comparison["interpretation"],
+            "n_trials": n_trials,
+        },
+    )
+
+    print(f"\nMETRICS: {metrics.to_json()}")
+
+
+# =============================================================================
+# Bonus: Interference vs Recency Baseline
+# =============================================================================
+
+
+@pytest.mark.stress
+@pytest.mark.parametrize("noise_level", STRESS_NOISE_LEVELS)
+def test_interference_vs_recency_baseline(noisy_memory, noise_level, update_report):
+    """Bonus: Differentiation test - interference vs recency baseline.
+
+    Recency baseline ranks by access time (most recent first).
+    Per CONTEXT.md: Include recency as third baseline comparison.
+    """
+    n_trials = 30 if update_report else 10
+
+    results = run_comparison_trials(noisy_memory, noise_level, n_trials=n_trials)
+
+    # Compare interference vs recency
+    comparison = compare_methods(
+        results["interference"],
+        results["recency"],
+        "interference",
+        "recency",
+    )
+
+    # Convert numpy bool to Python bool for JSON serialization
+    is_significant = bool(comparison["significant_at_0.05"])
+
+    metrics = StressMetrics(
+        test_name="interference_vs_recency",
+        noise_level=noise_level.value,
+        success=is_significant,
+        metrics={
+            "interference_mrr": compute_mrr(results["interference"]),
+            "recency_mrr": compute_mrr(results["recency"]),
+            "p_value": comparison["p_value"],
+            "statistically_significant": is_significant,
+            "n_trials": n_trials,
+        },
+    )
+
+    print(f"\nMETRICS: {metrics.to_json()}")
