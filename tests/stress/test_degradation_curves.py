@@ -346,3 +346,168 @@ def test_method_comparison_curves(noisy_memory, update_report):
         output_path = os.path.join(REPORTS_DIR, "method_comparison.png")
         plot_method_comparison(noise_levels, methods_data, output_path)
         print(f"Plot saved to {output_path}")
+
+
+@pytest.mark.stress
+def test_generate_full_report(noisy_memory, update_report):
+    """Generate complete Phase 8 metrics report.
+
+    Per CONTEXT.md: Markdown report AND raw JSON AND graphs.
+    Only runs with --update-report flag.
+    """
+    if not update_report:
+        pytest.skip("Report generation requires --update-report flag")
+
+    import datetime
+
+    # Collect all data
+    print("Collecting 4-level degradation data...")
+    data_4level = collect_4level_degradation(noisy_memory, n_trials=20)
+
+    print("Collecting fine-grained degradation data...")
+    data_fine = collect_fine_grained_degradation(noisy_memory, n_trials=15)
+
+    print("Collecting method comparison data...")
+    methods_data, noise_levels = collect_method_comparison_degradation(
+        noisy_memory,
+        n_trials=15,
+    )
+
+    # Generate plots
+    plot_degradation_curve(
+        {
+            "noise_level": [0, 1, 2, 3],
+            "mean_rank": [data_4level[l]["mean_rank"] for l in ["none", "low", "medium", "high"]],
+            "std_rank": [data_4level[l]["std_rank"] for l in ["none", "low", "medium", "high"]],
+        },
+        os.path.join(REPORTS_DIR, "degradation_4level.png"),
+    )
+
+    plot_degradation_curve(data_fine, os.path.join(REPORTS_DIR, "degradation_fine_grained.png"))
+
+    plot_method_comparison(noise_levels, methods_data, os.path.join(REPORTS_DIR, "method_comparison.png"))
+
+    # Save raw JSON
+    report_data = {
+        "generated": datetime.datetime.now().isoformat(),
+        "4level": data_4level,
+        "fine_grained": {
+            "noise_levels": data_fine["noise_level"],
+            "mean_rank": data_fine["mean_rank"],
+            "std_rank": data_fine["std_rank"],
+            "recall_at_3": data_fine["recall_at_3"],
+        },
+        "method_comparison": {
+            "noise_levels": noise_levels,
+            "methods": methods_data,
+        },
+    }
+
+    json_path = os.path.join(REPORTS_DIR, "metrics_data.json")
+    with open(json_path, "w") as f:
+        json.dump(report_data, f, indent=2)
+    print(f"JSON data saved to {json_path}")
+
+    # Generate markdown report
+    _generate_markdown_report(data_4level, data_fine, methods_data, noise_levels)
+
+    print("Full report generated successfully!")
+
+
+def _generate_markdown_report(
+    data_4level: dict,
+    data_fine: dict,
+    methods_data: dict[str, dict],
+    noise_levels: list[int],
+) -> None:
+    """Generate BASELINE_COMPARISON.md report.
+
+    Creates a comprehensive markdown report with:
+    - 4-level summary table
+    - Fine-grained degradation table
+    - Method comparison table
+    - Methodology documentation
+    """
+    import datetime
+
+    report_path = os.path.join(REPORTS_DIR, "BASELINE_COMPARISON.md")
+
+    lines = [
+        "# Phase 8: Baseline Comparison Report",
+        "",
+        f"**Generated:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        "",
+        "## Summary",
+        "",
+        "This report documents interference retrieval performance against baselines (cosine, random, recency) and degradation behavior under noise.",
+        "",
+        "## Degradation Curves",
+        "",
+        "### 4-Level Summary (NONE/LOW/MEDIUM/HIGH)",
+        "",
+        "| Level | Mean Rank | Std | MRR | Recall@3 |",
+        "|-------|-----------|-----|-----|----------|",
+    ]
+
+    for level in ["none", "low", "medium", "high"]:
+        d = data_4level[level]
+        lines.append(
+            f"| {level.upper()} | {d['mean_rank']:.2f} | {d['std_rank']:.2f} | {d['mrr']:.3f} | {d['recall_at_3']:.2f} |"
+        )
+
+    lines.extend([
+        "",
+        "![4-Level Degradation](degradation_4level.png)",
+        "",
+        "### Fine-Grained Degradation (by Near-Miss Count)",
+        "",
+        "| Near-Misses | Mean Rank | Std | Recall@3 |",
+        "|-------------|-----------|-----|----------|",
+    ])
+
+    for i, nm in enumerate(data_fine["noise_level"]):
+        lines.append(
+            f"| {nm} | {data_fine['mean_rank'][i]:.2f} | {data_fine['std_rank'][i]:.2f} | {data_fine['recall_at_3'][i]:.2f} |"
+        )
+
+    lines.extend([
+        "",
+        "![Fine-Grained Degradation](degradation_fine_grained.png)",
+        "",
+        "## Method Comparison",
+        "",
+        "![Method Comparison](method_comparison.png)",
+        "",
+        "### Final Rankings (at 10 near-misses)",
+        "",
+        "| Method | Mean Rank | Std |",
+        "|--------|-----------|-----|",
+    ])
+
+    # Last data point (highest noise)
+    for method_name, data in methods_data.items():
+        if data["mean_rank"]:
+            lines.append(
+                f"| {method_name} | {data['mean_rank'][-1]:.2f} | {data['std_rank'][-1]:.2f} |"
+            )
+
+    lines.extend([
+        "",
+        "## Methodology",
+        "",
+        "- **Metrics:** MRR (Mean Reciprocal Rank), Recall@K",
+        "- **Statistical Test:** Mann-Whitney U (p < 0.05 for significance)",
+        "- **Trial Count:** 15-20 per condition",
+        "- **Baseline Definitions:**",
+        "  - Cosine: Sparse binary vector cosine similarity",
+        "  - Random: Random pattern selection (floor baseline)",
+        "  - Recency: Ranks by last access time",
+        "",
+        "---",
+        "*Generated by Phase 8 test suite*",
+    ])
+
+    with open(report_path, "w") as f:
+        f.write("\n".join(lines))
+
+    print(f"Markdown report saved to {report_path}")
