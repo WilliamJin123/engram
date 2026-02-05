@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Engineer the substrate. Let everything else emerge.
-**Current focus:** v1.1 Harder Test Cases - Phase 7 COMPLETE, ready for Phase 8
+**Current focus:** v1.1 Harder Test Cases - Phase 8 in progress
 
 ## Current Position
 
-Phase: 7 of 8 (Stress Retrieval Tests) - COMPLETE
-Plan: 3 of 3 complete in Phase 7
-Status: Phase 7 complete, ready for Phase 8 planning
-Last activity: 2026-02-05 - Completed 07-03-PLAN.md
+Phase: 8 of 8 (Metrics & Validation)
+Plan: 1 of 3 complete in Phase 8
+Status: In progress
+Last activity: 2026-02-05 - Completed 08-01-PLAN.md
 
-Progress: v1.1 Phases 6-7 [################] 100% (5/5 plans)
-Progress: v1.1 Overall [############----] 75% (Phase 8 not yet planned)
+Progress: v1.1 Phases 6-8 [##################--] 90% (6/7 plans)
+Progress: v1.1 Overall [##############--] 86% (6/7 plans)
 
 ## Milestone Summary
 
@@ -30,7 +30,7 @@ Progress: v1.1 Overall [############----] 75% (Phase 8 not yet planned)
 - Addresses ceiling effect from v1.0 hypothesis validation
 - Phase 6 (Test Infrastructure) complete
 - Phase 7 (Stress Retrieval Tests) COMPLETE
-- Phase 8 (Adaptive Coherence) not yet planned
+- Phase 8 (Metrics & Validation) in progress - Plan 1 complete
 
 ## Phase 7 Test Results Summary
 
@@ -69,6 +69,12 @@ v1.1 Phase 7 decisions:
 - Crystallization effect not observable - needs Phase 8 investigation
 - Surprise detection targets clutter under noise - documented limitation
 
+v1.1 Phase 8 decisions:
+- MRR as primary metric (single correct answer per query)
+- Mann-Whitney U test for non-parametric rank comparison
+- fill_between for shaded confidence bands in plots
+- Recency score = 1/(1+age) for time-based ranking
+
 ### Pending Todos
 
 None.
@@ -87,16 +93,16 @@ Phase 8 improvements identified:
 
 ## Session Continuity
 
-Last session: 2026-02-05T01:15:00Z
-Stopped at: Completed 07-03-PLAN.md
+Last session: 2026-02-05T02:30:00Z
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-1. Plan Phase 8 (Adaptive Coherence) - use TEST_SUMMARY.md metrics as baseline
-2. Execute Phase 8 plans
+1. Execute 08-02-PLAN.md (baseline comparison tests)
+2. Execute 08-03-PLAN.md (degradation curve validation)
 3. Complete v1.1 milestone
 
 ---
 *State initialized: 2026-01-31*
-*Last updated: 2026-02-05 - Completed 07-03-PLAN.md (Phase 7 complete)*
+*Last updated: 2026-02-05 - Completed 08-01-PLAN.md (Phase 8 Plan 1 complete)*
