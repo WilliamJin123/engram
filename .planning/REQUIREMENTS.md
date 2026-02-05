@@ -22,9 +22,9 @@ Requirements for this milestone. Address the v1.0 ceiling effect by stress-testi
 
 ### Metrics & Validation
 
-- [ ] **METR-01**: Differentiation test: interference retrieval vs cosine similarity baseline
-- [ ] **METR-02**: Differentiation test: interference retrieval vs random retrieval baseline
-- [ ] **METR-03**: Graceful degradation curves: measure performance at each noise level
+- [x] **METR-01**: Differentiation test: interference retrieval vs cosine similarity baseline
+- [x] **METR-02**: Differentiation test: interference retrieval vs random retrieval baseline
+- [x] **METR-03**: Graceful degradation curves: measure performance at each noise level
 
 ## Future Requirements
 
@@ -60,9 +60,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TEST-01 | Phase 7 | Complete |
 | TEST-02 | Phase 7 | Complete |
 | TEST-03 | Phase 7 | Complete |
-| METR-01 | Phase 8 | Pending |
-| METR-02 | Phase 8 | Pending |
-| METR-03 | Phase 8 | Pending |
+| METR-01 | Phase 8 | Complete |
+| METR-02 | Phase 8 | Complete |
+| METR-03 | Phase 8 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 10 total
@@ -71,4 +71,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-05 - Phase 7 requirements complete*
+*Last updated: 2026-02-05 - Phase 8 requirements complete (v1.1 complete)*

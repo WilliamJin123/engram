@@ -3,7 +3,7 @@
 ## Milestones
 
 - [x] **v1.0 Coherence** - Phases 0-5 (shipped 2026-02-04)
-- [ ] **v1.1 Harder Test Cases** - Phases 6-8 (in progress)
+- [x] **v1.1 Harder Test Cases** - Phases 6-8 (complete 2026-02-05)
 
 ## Phases
 
@@ -71,7 +71,7 @@ Plans:
 
 - [x] **Phase 6: Test Infrastructure** - Noise generators and reusable fixtures
 - [x] **Phase 7: Harder Behavior Tests** - Tunneling, interference, and coherence with noise
-- [ ] **Phase 8: Metrics & Validation** - Baseline comparisons and degradation curves
+- [x] **Phase 8: Metrics & Validation** - Baseline comparisons and degradation curves
 
 ## Phase Details
 
@@ -118,9 +118,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — Metrics infrastructure (MRR, Recall@K, statistical tests, visualization, recency baseline)
-- [ ] 08-02-PLAN.md — Baseline comparison tests (METR-01, METR-02)
-- [ ] 08-03-PLAN.md — Degradation curves and report generation (METR-03)
+- [x] 08-01-PLAN.md — Metrics infrastructure (MRR, Recall@K, statistical tests, visualization, recency baseline)
+- [x] 08-02-PLAN.md — Baseline comparison tests (METR-01, METR-02)
+- [x] 08-03-PLAN.md — Degradation curves and report generation (METR-03)
 
 ## Progress
 
@@ -136,8 +136,8 @@ Plans:
 | 5. Architecture | v1.0 | 3/3 | Complete | 2026-02-04 |
 | 6. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-04 |
 | 7. Harder Behavior Tests | v1.1 | 3/3 | Complete | 2026-02-05 |
-| 8. Metrics & Validation | v1.1 | 0/3 | Planned | - |
+| 8. Metrics & Validation | v1.1 | 3/3 | Complete | 2026-02-05 |
 
 ---
 *Roadmap created: 2026-02-04*
-*Last updated: 2026-02-05*
+*Last updated: 2026-02-05 - Phase 8 complete, v1.1 milestone complete*
