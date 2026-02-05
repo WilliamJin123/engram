@@ -115,11 +115,12 @@ Plans:
   2. Differentiation test shows measurable gap between interference retrieval and random retrieval baseline
   3. Graceful degradation curves demonstrate performance at none/low/medium/high noise levels
   4. Results are documented with specific metrics (precision, recall, or rank-based measures)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 08-01: TBD
-- [ ] 08-02: TBD
+- [ ] 08-01-PLAN.md — Metrics infrastructure (MRR, Recall@K, statistical tests, visualization, recency baseline)
+- [ ] 08-02-PLAN.md — Baseline comparison tests (METR-01, METR-02)
+- [ ] 08-03-PLAN.md — Degradation curves and report generation (METR-03)
 
 ## Progress
 
@@ -135,7 +136,7 @@ Plans:
 | 5. Architecture | v1.0 | 3/3 | Complete | 2026-02-04 |
 | 6. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-04 |
 | 7. Harder Behavior Tests | v1.1 | 3/3 | Complete | 2026-02-05 |
-| 8. Metrics & Validation | v1.1 | 0/? | Not started | - |
+| 8. Metrics & Validation | v1.1 | 0/3 | Planned | - |
 
 ---
 *Roadmap created: 2026-02-04*
