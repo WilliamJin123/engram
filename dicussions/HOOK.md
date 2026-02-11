@@ -1,1 +1,0 @@
-Read INTUITION and all the quantum_* md files in this dir. If the user asks questions heavily related to testing, be aware that you should maybe raed TEST_SUMMARY.md (do not read this right away, only when needed).
